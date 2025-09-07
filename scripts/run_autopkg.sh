@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+AUTOPKG_CMD="${AUTOPKG_CMD:-autopkg}"
 
 MAP_FILE="config/recipe-map.yml"
 OUT_DIR="out"
@@ -33,8 +34,8 @@ PY
 while IFS= read -r recipe; do
   [[ -n "$recipe" ]] || continue
   echo "Running $recipe"
-  autopkg run "$recipe" --report-plist=report.plist -v
-  PKG=$(/usr/libexec/PlistBuddy -c 'Print :report:packages:0:path' report.plist)
+  $AUTOPKG_CMD run "overrides/overrides/${recipe}.recipe" --report-plist=report.plist -v
+  PKG=$(/usr/libexec/PlistBuddy -c 'Print :results:packages:0:pathname' report.plist)
   read TEAM SELF_SERVICE < <(read_map "$recipe")
   RESPONSE=$(curl -sS -X POST "$FLEET_URL/api/v1/fleet/software/package" \
     -H "Authorization: Bearer $FLEET_API_TOKEN" -H "kbn-xsrf: true" \

@@ -2,6 +2,11 @@
 
 This repository contains a GitHub Actions workflow and helper scripts to run [AutoPkg](https://autopkg.github.io/autopkg/) recipes, upload packages to [Fleet](https://fleetdm.com/), and open pull requests against a separate GitOps repository.
 
+AutoPkg is invoked differently depending on the environment:
+
+- Locally, call the `autopkg` CLI directly (for example when installed via Homebrew).
+- In CI, the workflow uses `python autopkg/Code/autopkg` from the setup action and exposes it via the `AUTOPKG_CMD` environment variable so scripts behave the same.
+
 ## Required secrets
 
 Set these secrets in the repository settings so the workflow can access external services:
