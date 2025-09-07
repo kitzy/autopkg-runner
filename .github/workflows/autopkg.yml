@@ -27,21 +27,31 @@ jobs:
           ref: ${{ secrets.OVERRIDES_REF }}
           path: overrides
           persist-credentials: false
-
-      - name: Setup AutoPkg (pin valid tag)
-        uses: autopkg/setup-autopkg-actions@v0.1.2
-
-      - name: Tooling
+      - name: Install AutoPkg (official pkg) + tooling
         run: |
+          set -euo pipefail
           brew install jq
           python3 -m pip install --upgrade pip ruamel.yaml
-        # Expose the correct AutoPkg CLI for THIS runner environment.
-        env:
-          AUTOPKG_CMD: python autopkg/Code/autopkg
+          # Fetch latest AutoPkg release pkg URL
+          URL="$(curl -fsSL https://api.github.com/repos/autopkg/autopkg/releases/latest \
+                  | jq -r '.assets[] | select(.name | endswith(".pkg")) | .browser_download_url')"
+          echo "AutoPkg pkg: $URL"
+          curl -fsSL "$URL" -o /tmp/autopkg.pkg
+          sudo installer -pkg /tmp/autopkg.pkg -target /
+          autopkg version
+
+      - name: Ensure autopkgserver is running
+        run: |
+          set -euo pipefail
+          # On GH macOS runners sudo is passwordless; load if not already.
+          if ! sudo launchctl list | grep -q com.github.autopkg.autopkgserver; then
+            sudo launchctl bootstrap system /Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist
+          fi
+          sudo launchctl print system/com.github.autopkg.autopkgserver || true
 
       - name: Add upstream recipe repos
         env:
-          AUTOPKG_CMD: python autopkg/Code/autopkg
+          AUTOPKG_CMD: autopkg
         run: |
           set -euo pipefail
           $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
@@ -50,15 +60,11 @@ jobs:
 
       - name: Verify trust for recipes in overrides list
         env:
-          AUTOPKG_CMD: python autopkg/Code/autopkg
+          AUTOPKG_CMD: autopkg
         run: |
           set -euo pipefail
-          # Read non-empty, non-comment lines from the list (portable Bash 3 syntax)
-          RECIPES=()
-          while IFS= read -r line; do
-            RECIPES+=("$line")
-          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
-          if [[ ${#RECIPES[@]} -eq 0 ]]; then
+          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
           fi
@@ -74,17 +80,14 @@ jobs:
 
       - name: Run AutoPkg + upload to Fleet
         env:
-          AUTOPKG_CMD: python autopkg/Code/autopkg
+          AUTOPKG_CMD: autopkg
           FLEET_URL: ${{ secrets.FLEET_URL }}
           FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p out
-          RECIPES=()
-          while IFS= read -r line; do
-            RECIPES+=("$line")
-          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
-          if [[ ${#RECIPES[@]} -eq 0 ]]; then
+          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
           fi
