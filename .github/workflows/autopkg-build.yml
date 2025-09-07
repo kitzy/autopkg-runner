@@ -1,0 +1,137 @@
+name: AutoPkg build (recipe list from recipe-overrides)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout runner repo
+        uses: actions/checkout@v4
+
+      - name: Checkout autopkg-overrides (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: kitzy/autopkg-overrides
+          ref: main
+          path: recipe_overrides
+          # If that repo is private and Actions can't read it, add:
+          # token: ${{ secrets.RECIPE_OVERRIDES_TOKEN }}
+          persist-credentials: false
+
+      - name: Debug paths
+        run: |
+          ls -la recipe_overrides/recipe-lists || true
+          ls -la recipe_overrides/overrides | sed -n '1,50p' || true
+          test -f recipe_overrides/overrides/Firefox.pkg.recipe && echo "Found Firefox override"
+
+      - name: Install AutoPkg (official pkg)
+        run: |
+          set -euo pipefail
+          brew install jq
+          URL="$(curl -fsSL https://api.github.com/repos/autopkg/autopkg/releases/latest \
+                 | jq -r '.assets[] | select(.name | endswith(".pkg")) | .browser_download_url')"
+          echo "AutoPkg pkg: $URL"
+          curl -fsSL "$URL" -o /tmp/autopkg.pkg
+          sudo installer -pkg /tmp/autopkg.pkg -target /
+          autopkg version
+
+      - name: Ensure autopkgserver is running
+        run: |
+          set -euo pipefail
+          if ! sudo launchctl list | grep -q com.github.autopkg.autopkgserver; then
+            sudo launchctl bootstrap system /Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist
+          fi
+          sudo launchctl print system/com.github.autopkg.autopkgserver || true
+
+      - name: Add upstream recipe repos
+        env: { AUTOPKG_CMD: autopkg }
+        run: |
+          set -euo pipefail
+          $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
+          $AUTOPKG_CMD repo-add https://github.com/homebysix/recipes || true
+          $AUTOPKG_CMD repo-list
+
+      - name: Build all recipes from darwin-prod.txt
+        env:
+          AUTOPKG_CMD: autopkg
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          LIST="recipe_overrides/recipe-lists/darwin-prod.txt"
+          [[ -f "$LIST" ]] || { echo "::error ::Recipe list not found at $LIST"; exit 1; }
+
+          # Read non-empty, non-comment lines
+          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' "$LIST" || true)
+          (( ${#RECIPES[@]} > 0 )) || { echo "::error ::No recipes in $LIST"; exit 1; }
+
+          echo "Recipes to build:"; printf ' - %s\n' "${RECIPES[@]}"
+
+          successes=0; failures=0
+          for r in "${RECIPES[@]}"; do
+            # Prefer an override if present
+            OVR1="recipe_overrides/overrides/${r}.recipe"
+            TARGET="$r"
+            [[ -f "$OVR1" ]] && TARGET="$OVR1"
+
+            echo "::group::Build $r (target: $TARGET)"
+            if [[ "$TARGET" != "$r" ]]; then
+              echo "Verifying trust for override: $TARGET"
+              $AUTOPKG_CMD verify-trust-info "$TARGET"
+            fi
+
+            set +e
+            $AUTOPKG_CMD run "$TARGET" --report-plist=report.plist -v
+            rc=$?
+            set -e
+            if (( rc != 0 )); then
+              echo "::error ::AutoPkg failed for $r (exit $rc)"
+              ((failures++)) || true
+              echo "::endgroup::"
+              continue
+            fi
+
+            PKG=$(/usr/libexec/PlistBuddy -c 'Print :results:packages:0:pathname' report.plist 2>/dev/null || true)
+            if [[ -z "${PKG:-}" || ! -f "$PKG" ]]; then
+              echo "::warning ::No pkg produced for $r; skipping artifact copy"
+              ((failures++)) || true
+              echo "::endgroup::"
+              continue
+            fi
+            echo "PKG=$PKG"
+            cp "$PKG" out/
+            ((successes++)) || true
+            echo "::endgroup::"
+          done
+
+          echo "Successes: $successes  Failures: $failures"
+          (( successes > 0 )) || { echo "::error ::All builds failed or produced no pkg"; exit 70; }
+
+      - name: Upload pkg artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: autopkg-pkgs
+          path: out/*.pkg
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## AutoPkg build summary" >> $GITHUB_STEP_SUMMARY
+          if ls out/*.pkg >/dev/null 2>&1; then
+            for f in out/*.pkg; do
+              echo "- $(basename "$f")" >> $GITHUB_STEP_SUMMARY
+            done
+          else
+            echo "_No pkg artifacts saved._" >> $GITHUB_STEP_SUMMARY
