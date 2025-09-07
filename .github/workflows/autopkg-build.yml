@@ -83,14 +83,18 @@ jobs:
           LIST="recipe_overrides/recipe-lists/darwin-prod.txt"
           [[ -f "$LIST" ]] || { echo "::error ::Recipe list not found at $LIST"; exit 1; }
 
-          # Read non-empty, non-comment lines
-          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' "$LIST" || true)
-          (( ${#RECIPES[@]} > 0 )) || { echo "::error ::No recipes in $LIST"; exit 1; }
+          # macOS bash 3.x lacks 'mapfile' — use a temp file + while-read loop
+          RECIPE_STREAM="$(mktemp)"
+          grep -Ev '^\s*(#|$)' "$LIST" > "$RECIPE_STREAM" || true
+          if ! [[ -s "$RECIPE_STREAM" ]]; then
+            echo "::error ::No recipes in $LIST"; exit 1
+          fi
 
-          echo "Recipes to build:"; printf ' - %s\n' "${RECIPES[@]}"
+          echo "Recipes to build:"
+          sed 's/^/ - /' "$RECIPE_STREAM"
 
           successes=0; failures=0
-          for r in "${RECIPES[@]}"; do
+          while IFS= read -r r; do
             # Prefer an override if present
             OVR1="recipe_overrides/overrides/${r}.recipe"
             TARGET="$r"
@@ -108,7 +112,7 @@ jobs:
             set -e
             if (( rc != 0 )); then
               echo "::error ::AutoPkg failed for $r (exit $rc)"
-              ((failures++)) || true
+              failures=$((failures+1))
               echo "::endgroup::"
               continue
             fi
@@ -116,16 +120,16 @@ jobs:
             PKG=$(/usr/libexec/PlistBuddy -c 'Print :results:packages:0:pathname' report.plist 2>/dev/null || true)
             if [[ -z "${PKG:-}" || ! -f "$PKG" ]]; then
               echo "::warning ::No pkg produced for $r; skipping artifact copy"
-              ((failures++)) || true
+              failures=$((failures+1))
               echo "::endgroup::"
               continue
             fi
 
             echo "PKG=$PKG"
             cp "$PKG" out/
-            ((successes++)) || true
+            successes=$((successes+1))
             echo "::endgroup::"
-          done
+          done < "$RECIPE_STREAM"
 
           echo "Successes: $successes  Failures: $failures"
           (( successes > 0 )) || { echo "::error ::All builds failed or produced no pkg"; exit 70; }
