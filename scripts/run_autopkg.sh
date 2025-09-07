@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+if [[ $EUID -eq 0 ]]; then
+  echo "Do not run this script as root." >&2
+  exit 1
+fi
 set -euo pipefail
 AUTOPKG_CMD="${AUTOPKG_CMD:-autopkg}"
 
