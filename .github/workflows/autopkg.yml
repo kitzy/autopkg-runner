@@ -49,9 +49,10 @@ jobs:
       - name: Verify trust for recipes in overrides list
         run: |
           set -euo pipefail
-          mapfile -t RECIPES < <(
-            grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true
-          )
+          RECIPES=()
+          while IFS= read -r line; do
+            RECIPES+=("$line")
+          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
           if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
