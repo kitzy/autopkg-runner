@@ -1,6 +1,7 @@
+---
 name: 'AutoPkg → Fleet → PR'
 
-on:
+'on':
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
@@ -33,8 +34,13 @@ jobs:
           brew install jq
           python3 -m pip install --upgrade pip ruamel.yaml
           # Fetch latest AutoPkg release pkg URL
-          URL="$(curl -fsSL https://api.github.com/repos/autopkg/autopkg/releases/latest \
-                  | jq -r '.assets[] | select(.name | endswith(".pkg")) | .browser_download_url')"
+          URL="$(
+            curl -fsSL \
+              https://api.github.com/repos/autopkg/autopkg/releases/latest |
+            jq -r '.assets[] |
+              select(.name | endswith(".pkg")) |
+              .browser_download_url'
+          )"
           echo "AutoPkg pkg: $URL"
           curl -fsSL "$URL" -o /tmp/autopkg.pkg
           sudo installer -pkg /tmp/autopkg.pkg -target /
@@ -44,14 +50,15 @@ jobs:
         run: |
           set -euo pipefail
           # On GH macOS runners sudo is passwordless; load if not already.
-          if ! sudo launchctl list | grep -q com.github.autopkg.autopkgserver; then
-            sudo launchctl bootstrap system /Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist
+          if ! sudo launchctl list |
+            grep -q com.github.autopkg.autopkgserver; then
+            sudo launchctl bootstrap system \
+              /Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist
           fi
           sudo launchctl print system/com.github.autopkg.autopkgserver || true
 
       - name: Add upstream recipe repos
-        env:
-          AUTOPKG_CMD: autopkg
+        env: { AUTOPKG_CMD: autopkg }  # yamllint disable-line rule:braces
         run: |
           set -euo pipefail
           $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
@@ -59,11 +66,12 @@ jobs:
           $AUTOPKG_CMD repo-list
 
       - name: Verify trust for recipes in overrides list
-        env:
-          AUTOPKG_CMD: autopkg
+        env: { AUTOPKG_CMD: autopkg }  # yamllint disable-line rule:braces
         run: |
           set -euo pipefail
-          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          mapfile -t RECIPES < <(
+            grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true
+          )
           if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
@@ -74,7 +82,8 @@ jobs:
               echo "Verifying trust: $OVR"
               $AUTOPKG_CMD verify-trust-info "$OVR"
             else
-              echo "No override for ${r} at $OVR — skipping trust verification for this item."
+              echo "No override for ${r} at $OVR — skipping trust verification \
+                for this item."
             fi
           done
 
@@ -86,7 +95,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out
-          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          mapfile -t RECIPES < <(
+            grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true
+          )
           if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
@@ -97,7 +108,10 @@ jobs:
             if [[ -f "$OVR" ]]; then TARGET="$OVR"; fi
             echo "Running AutoPkg target: $TARGET"
             $AUTOPKG_CMD run "$TARGET" --report-plist=report.plist -v
-            PKG=$(/usr/libexec/PlistBuddy -c 'Print :results:packages:0:pathname' report.plist)
+            PKG=$( \
+              /usr/libexec/PlistBuddy \
+                -c 'Print :results:packages:0:pathname' report.plist
+            )
             echo "PKG=$PKG"
             curl -sS -X POST "$FLEET_URL/api/v1/fleet/software/package" \
               -H "Authorization: Bearer $FLEET_API_TOKEN" \
@@ -112,7 +126,8 @@ jobs:
           GITOPS_REPO: ${{ secrets.GITOPS_REPO }}
           GITOPS_PUSH_TOKEN: ${{ secrets.GITOPS_PUSH_TOKEN }}
         run: |
-          git clone "https://$GITOPS_PUSH_TOKEN@github.com/$GITOPS_REPO.git" gitops
+          git clone "https://$GITOPS_PUSH_TOKEN@github.com/$GITOPS_REPO.git" \
+            gitops
           cd gitops
           git config user.name "autopkg-bot"
           git config user.email "autopkg-bot@users.noreply.github.com"
@@ -135,14 +150,37 @@ jobs:
             git checkout "$GITOPS_DEFAULT_BRANCH"
             git pull --ff-only
             git checkout -b "$branch"
-            python3 ../scripts/update_gitops.py --gitops-dir . --json "../$json" --teams workstations,workstations-canary
+            python3 ../scripts/update_gitops.py \
+              --gitops-dir . \
+              --json "../$json" \
+              --teams workstations,workstations-canary
             git add .
             git commit -m "autopkg: update $name to $version"
             git push -u origin "$branch"
-            pr=$(curl -s -X POST -H "Authorization: token $GITOPS_PUSH_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/$GITOPS_REPO/pulls -d '{"title":"autopkg: '"$name"' '"$version"'","head":"'"$branch"'","base":"'"$GITOPS_DEFAULT_BRANCH"'"}')
+            data=$(jq -n \
+              --arg title "autopkg: $name $version" \
+              --arg head "$branch" \
+              --arg base "$GITOPS_DEFAULT_BRANCH" \
+              '{title: $title, head: $head, base: $base}'
+            )
+            pr=$( \
+              curl -s -X POST \
+                -H "Authorization: token $GITOPS_PUSH_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/repos/$GITOPS_REPO/pulls \
+                -d "$data"
+            )
             pr_url=$(echo "$pr" | jq -r '.html_url')
             pr_id=$(echo "$pr" | jq -r '.node_id')
-            curl -s -X POST -H "Authorization: token $GITOPS_PUSH_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/graphql -d '{"query":"mutation{enablePullRequestAutoMerge(input:{pullRequestId:\"'"$pr_id"'\",mergeMethod:SQUASH}){clientMutationId}}"}'
+            query='mutation{enablePullRequestAutoMerge('\
+              '  input:{pullRequestId:"'"$pr_id"'",'\
+              '  mergeMethod:SQUASH}){clientMutationId}}'
+            payload=$(jq -n --arg q "$query" '{query: $q}')
+            curl -s -X POST \
+              -H "Authorization: token $GITOPS_PUSH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/graphql \
+              -d "$payload"
             echo "$pr_url" >> ../pr_urls.txt
             cd ..
           done
