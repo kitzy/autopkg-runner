@@ -7,6 +7,13 @@ AutoPkg is invoked differently depending on the environment:
 - Locally, call the `autopkg` CLI directly (for example when installed via Homebrew).
 - In CI, the workflow uses `python autopkg/Code/autopkg` from the setup action and exposes it via the `AUTOPKG_CMD` environment variable so scripts behave the same.
 
+Run AutoPkg as an unprivileged user. Use [`scripts/run_autopkg.sh`](scripts/run_autopkg.sh) to process recipe lists from an overrides repository. For example, after cloning the overrides repository:
+
+```bash
+git clone https://github.com/<owner>/<overrides-repo>.git overrides
+sudo -u autopkg ./scripts/run_autopkg.sh
+```
+
 ## Required secrets
 
 Set these secrets in the repository settings so the workflow can access external services:
