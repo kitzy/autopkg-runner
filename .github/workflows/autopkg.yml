@@ -52,7 +52,9 @@ jobs:
           RECIPES=()
           while IFS= read -r line; do
             RECIPES+=("$line")
-          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          done < <(
+            grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true
+          )
           if (( ${#RECIPES[@]} == 0 )); then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
@@ -75,7 +77,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out
-          mapfile -t RECIPES < <(
+          RECIPES=()
+          while IFS= read -r line; do
+            RECIPES+=("$line")
+          done < <(
             grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true
           )
           if (( ${#RECIPES[@]} == 0 )); then
