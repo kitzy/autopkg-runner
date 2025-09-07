@@ -39,9 +39,6 @@ jobs:
       - name: Check AutoPkg version
         run: $AUTOPKG_CMD version
 
-      - name: Start autopkgserver
-        run: sudo $AUTOPKG_CMD install
-
       - name: Add upstream recipe repos
         run: |
           set -euo pipefail
