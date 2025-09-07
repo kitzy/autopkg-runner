@@ -25,9 +25,9 @@ jobs:
           repository: kitzy/autopkg-overrides
           ref: main
           path: recipe_overrides
-          # If that repo is private and Actions can't read it, add:
-          # token: ${{ secrets.RECIPE_OVERRIDES_TOKEN }}
           persist-credentials: false
+          # If the repo is private and this job lacks access, add a token:
+          # token: ${{ secrets.RECIPE_OVERRIDES_TOKEN }}
 
       - name: Debug paths
         run: |
@@ -49,13 +49,25 @@ jobs:
       - name: Ensure autopkgserver is running
         run: |
           set -euo pipefail
-          if ! sudo launchctl list | grep -q com.github.autopkg.autopkgserver; then
-            sudo launchctl bootstrap system /Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist
+          PLIST="/Library/LaunchDaemons/com.github.autopkg.autopkgserver.plist"
+          LABEL="com.github.autopkg.autopkgserver"
+
+          # If not present/loaded, try to load without failing the job on runner policy errors.
+          if ! sudo launchctl print system/${LABEL} >/dev/null 2>&1; then
+            sudo launchctl bootstrap system "$PLIST" 2>/dev/null || \
+            sudo launchctl load -w "$PLIST" 2>/dev/null || true
           fi
-          sudo launchctl print system/com.github.autopkg.autopkgserver || true
+
+          # Make sure it's enabled and started; don't die if these are no-ops.
+          sudo launchctl enable system/${LABEL} || true
+          sudo launchctl kickstart -k system/${LABEL} || true
+
+          # Show current state (for logs), but don't fail if print is noisy.
+          sudo launchctl print system/${LABEL} || true
 
       - name: Add upstream recipe repos
-        env: { AUTOPKG_CMD: autopkg }
+        env:
+          AUTOPKG_CMD: autopkg
         run: |
           set -euo pipefail
           $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
@@ -108,6 +120,7 @@ jobs:
               echo "::endgroup::"
               continue
             fi
+
             echo "PKG=$PKG"
             cp "$PKG" out/
             ((successes++)) || true
@@ -128,10 +141,11 @@ jobs:
       - name: Job summary
         if: always()
         run: |
-          echo "## AutoPkg build summary" >> $GITHUB_STEP_SUMMARY
+          echo "## AutoPkg build summary" >> "$GITHUB_STEP_SUMMARY"
           if ls out/*.pkg >/dev/null 2>&1; then
             for f in out/*.pkg; do
-              echo "- $(basename "$f")" >> $GITHUB_STEP_SUMMARY
+              echo "- $(basename "$f")" >> "$GITHUB_STEP_SUMMARY"
             done
           else
-            echo "_No pkg artifacts saved._" >> $GITHUB_STEP_SUMMARY
+            echo "_No pkg artifacts saved._" >> "$GITHUB_STEP_SUMMARY"
+          fi
