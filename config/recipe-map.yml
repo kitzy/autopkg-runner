@@ -1,0 +1,10 @@
+defaults:
+  team_id: 0
+  self_service: true
+recipes:
+  Firefox.pkg:
+    team_id: 2
+    self_service: true
+  Zoom.pkg:
+    team_id: 2
+    self_service: false

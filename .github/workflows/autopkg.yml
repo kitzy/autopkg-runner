@@ -1,0 +1,90 @@
+name: AutoPkg
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autopkg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout overrides
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.OVERRIDES_REPO }}
+          ref: ${{ secrets.OVERRIDES_REF }}
+          path: overrides
+      - name: Setup AutoPkg
+        uses: autopkg/setup-autopkg-actions@v1
+      - name: Install dependencies
+        run: |
+          brew install jq
+          python3 -m pip install --quiet ruamel.yaml pyyaml
+      - name: Add recipe repos
+        run: |
+          autopkg repo-add autopkg/recipes
+          autopkg repo-add homebysix/recipes
+      - name: Verify recipe trust
+        run: |
+          set -e
+          while read -r recipe; do
+            [[ -n "$recipe" ]] || continue
+            autopkg verify-trust "$recipe"
+          done < overrides/recipe-lists/darwin-prod.txt
+      - name: Run AutoPkg
+        env:
+          FLEET_URL: ${{ secrets.FLEET_URL }}
+          FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
+        run: scripts/run_autopkg.sh
+      - name: Clone GitOps repo
+        env:
+          GITOPS_REPO: ${{ secrets.GITOPS_REPO }}
+          GITOPS_PUSH_TOKEN: ${{ secrets.GITOPS_PUSH_TOKEN }}
+        run: |
+          git clone "https://$GITOPS_PUSH_TOKEN@github.com/$GITOPS_REPO.git" gitops
+          cd gitops
+          git config user.name "autopkg-bot"
+          git config user.email "autopkg-bot@users.noreply.github.com"
+          git checkout "${{ secrets.GITOPS_DEFAULT_BRANCH }}"
+      - name: Update GitOps and open PRs
+        env:
+          GITOPS_REPO: ${{ secrets.GITOPS_REPO }}
+          GITOPS_DEFAULT_BRANCH: ${{ secrets.GITOPS_DEFAULT_BRANCH }}
+          GITOPS_PUSH_TOKEN: ${{ secrets.GITOPS_PUSH_TOKEN }}
+        run: |
+          set -e
+          touch pr_urls.txt
+          for json in out/*.json; do
+            slug=$(basename "$json" .json)
+            name=$(jq -r '.name' "$json")
+            version=$(jq -r '.version' "$json")
+            branch="autopkg/${slug}/v${version}"
+            cd gitops
+            git checkout "$GITOPS_DEFAULT_BRANCH"
+            git pull --ff-only
+            git checkout -b "$branch"
+            python3 ../scripts/update_gitops.py --gitops-dir . --json "../$json" --teams workstations,workstations-canary
+            git add .
+            git commit -m "autopkg: update $name to $version"
+            git push -u origin "$branch"
+            pr=$(curl -s -X POST -H "Authorization: token $GITOPS_PUSH_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/$GITOPS_REPO/pulls -d '{"title":"autopkg: '"$name"' '"$version"'","head":"'"$branch"'","base":"'"$GITOPS_DEFAULT_BRANCH"'"}')
+            pr_url=$(echo "$pr" | jq -r '.html_url')
+            pr_id=$(echo "$pr" | jq -r '.node_id')
+            curl -s -X POST -H "Authorization: token $GITOPS_PUSH_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/graphql -d '{"query":"mutation{enablePullRequestAutoMerge(input:{pullRequestId:\"'"$pr_id"'\",mergeMethod:SQUASH}){clientMutationId}}"}'
+            echo "$pr_url" >> ../pr_urls.txt
+            cd ..
+          done
+      - name: PR Summary
+        run: |
+          echo '## Pull Requests' >> $GITHUB_STEP_SUMMARY
+          cat pr_urls.txt >> $GITHUB_STEP_SUMMARY
