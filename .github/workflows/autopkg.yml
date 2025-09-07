@@ -1,9 +1,9 @@
-name: AutoPkg
+name: 'AutoPkg → Fleet → PR'
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,35 +14,53 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  autopkg:
+  build-publish:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Checkout overrides
+      - name: Checkout runner
+        uses: actions/checkout@v4
+
+      - name: Checkout overrides (read-only)
         uses: actions/checkout@v4
         with:
           repository: ${{ secrets.OVERRIDES_REPO }}
           ref: ${{ secrets.OVERRIDES_REF }}
           path: overrides
-      - name: Setup AutoPkg
-        uses: autopkg/setup-autopkg-actions@v1
-      - name: Install dependencies
+          persist-credentials: false
+
+      - name: Setup AutoPkg (pin valid tag)
+        uses: autopkg/setup-autopkg-actions@v0.1.2
+
+      - name: Tooling
         run: |
           brew install jq
-          python3 -m pip install --quiet ruamel.yaml pyyaml
-      - name: Add recipe repos
-        run: |
-          autopkg repo-add autopkg/recipes
-          autopkg repo-add homebysix/recipes
-      - name: Verify recipe trust
-        run: |
-          set -e
-          while read -r recipe; do
-            [[ -n "$recipe" ]] || continue
-            autopkg verify-trust "$recipe"
-          done < overrides/recipe-lists/darwin-prod.txt
-      - name: Run AutoPkg
+          python3 -m pip install --upgrade pip ruamel.yaml
+        # Expose the correct AutoPkg CLI for THIS runner environment.
         env:
+          AUTOPKG_CMD: python autopkg/Code/autopkg
+
+      - name: Add upstream recipe repos
+        env:
+          AUTOPKG_CMD: python autopkg/Code/autopkg
+        run: |
+          set -euo pipefail
+          $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
+          $AUTOPKG_CMD repo-add https://github.com/homebysix/recipes || true
+          $AUTOPKG_CMD repo-list
+
+      - name: Verify trust for recipes in overrides list
+        env:
+          AUTOPKG_CMD: python autopkg/Code/autopkg
+        run: |
+          set -euo pipefail
+          while read -r r; do
+            echo "Verifying trust: $r"
+            $AUTOPKG_CMD verify-trust-info "overrides/overrides/${r}.recipe" || exit 1
+          done < overrides/recipe-lists/darwin-prod.txt
+
+      - name: Run AutoPkg + upload to Fleet
+        env:
+          AUTOPKG_CMD: python autopkg/Code/autopkg
           FLEET_URL: ${{ secrets.FLEET_URL }}
           FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
         run: scripts/run_autopkg.sh
@@ -56,6 +74,7 @@ jobs:
           git config user.name "autopkg-bot"
           git config user.email "autopkg-bot@users.noreply.github.com"
           git checkout "${{ secrets.GITOPS_DEFAULT_BRANCH }}"
+
       - name: Update GitOps and open PRs
         env:
           GITOPS_REPO: ${{ secrets.GITOPS_REPO }}
@@ -84,6 +103,7 @@ jobs:
             echo "$pr_url" >> ../pr_urls.txt
             cd ..
           done
+
       - name: PR Summary
         run: |
           echo '## Pull Requests' >> $GITHUB_STEP_SUMMARY
