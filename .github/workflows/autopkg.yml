@@ -53,9 +53,12 @@ jobs:
           AUTOPKG_CMD: python autopkg/Code/autopkg
         run: |
           set -euo pipefail
-          # Read non-empty, non-comment lines from the list
-          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
-          if (( ${#RECIPES[@]} == 0 )); then
+          # Read non-empty, non-comment lines from the list (portable Bash 3 syntax)
+          RECIPES=()
+          while IFS= read -r line; do
+            RECIPES+=("$line")
+          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if [[ ${#RECIPES[@]} -eq 0 ]]; then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
           fi
@@ -77,8 +80,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out
-          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
-          if (( ${#RECIPES[@]} == 0 )); then
+          RECIPES=()
+          while IFS= read -r line; do
+            RECIPES+=("$line")
+          done < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if [[ ${#RECIPES[@]} -eq 0 ]]; then
             echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
             exit 1
           fi
