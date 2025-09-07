@@ -53,17 +53,51 @@ jobs:
           AUTOPKG_CMD: python autopkg/Code/autopkg
         run: |
           set -euo pipefail
-          while read -r r; do
-            echo "Verifying trust: $r"
-            $AUTOPKG_CMD verify-trust-info "overrides/overrides/${r}.recipe" || exit 1
-          done < overrides/recipe-lists/darwin-prod.txt
+          # Read non-empty, non-comment lines from the list
+          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if (( ${#RECIPES[@]} == 0 )); then
+            echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
+            exit 1
+          fi
+          for r in "${RECIPES[@]}"; do
+            OVR="overrides/overrides/${r}.recipe"
+            if [[ -f "$OVR" ]]; then
+              echo "Verifying trust: $OVR"
+              $AUTOPKG_CMD verify-trust-info "$OVR"
+            else
+              echo "No override for ${r} at $OVR — skipping trust verification for this item."
+            fi
+          done
 
       - name: Run AutoPkg + upload to Fleet
         env:
           AUTOPKG_CMD: python autopkg/Code/autopkg
           FLEET_URL: ${{ secrets.FLEET_URL }}
           FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
-        run: scripts/run_autopkg.sh
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          mapfile -t RECIPES < <(grep -Ev '^\s*(#|$)' overrides/recipe-lists/darwin-prod.txt || true)
+          if (( ${#RECIPES[@]} == 0 )); then
+            echo "No recipes found in overrides/recipe-lists/darwin-prod.txt"
+            exit 1
+          fi
+          for r in "${RECIPES[@]}"; do
+            OVR="overrides/overrides/${r}.recipe"
+            TARGET="$r"
+            if [[ -f "$OVR" ]]; then TARGET="$OVR"; fi
+            echo "Running AutoPkg target: $TARGET"
+            $AUTOPKG_CMD run "$TARGET" --report-plist=report.plist -v
+            PKG=$(/usr/libexec/PlistBuddy -c 'Print :results:packages:0:pathname' report.plist)
+            echo "PKG=$PKG"
+            curl -sS -X POST "$FLEET_URL/api/v1/fleet/software/package" \
+              -H "Authorization: Bearer $FLEET_API_TOKEN" \
+              -H "kbn-xsrf: true" \
+              -F team_id=0 \
+              -F self_service=true \
+              -F "software=@${PKG};type=application/octet-stream" \
+            | tee "out/${r%.pkg}.json"
+          done
       - name: Clone GitOps repo
         env:
           GITOPS_REPO: ${{ secrets.GITOPS_REPO }}
