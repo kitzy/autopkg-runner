@@ -66,6 +66,7 @@ jobs:
           # Show current state (for logs), but don't fail if print is noisy.
           sudo launchctl print system/${LABEL} || true
 
+      - name: Add recipe repos from overrides list (autopkg repo-add)
         env:
           AUTOPKG_CMD: autopkg
         run: |
