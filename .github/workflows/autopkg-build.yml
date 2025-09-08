@@ -31,6 +31,7 @@ jobs:
 
       - name: Debug paths
         run: |
+          ls -la recipe_overrides/recipe-repos.txt || true
           ls -la recipe_overrides/recipe-lists || true
           ls -la recipe_overrides/overrides | sed -n '1,50p' || true
           test -f recipe_overrides/overrides/Firefox.pkg.recipe && echo "Found Firefox override"
@@ -65,14 +66,31 @@ jobs:
           # Show current state (for logs), but don't fail if print is noisy.
           sudo launchctl print system/${LABEL} || true
 
-      - name: Add upstream recipe repos
+      - name: Add recipe repos from overrides list (autopkg repo-add)
         env:
           AUTOPKG_CMD: autopkg
         run: |
           set -euo pipefail
-          $AUTOPKG_CMD repo-add https://github.com/autopkg/recipes || true
-          $AUTOPKG_CMD repo-add https://github.com/homebysix/recipes || true
-          $AUTOPKG_CMD repo-list
+          LIST="recipe_overrides/recipe-lists/recipe-repos.txt"
+          [[ -f "$LIST" ]] || { echo "::error ::Repo list not found at $LIST"; exit 1; }
+
+          # macOS bash 3.x: no mapfile — use a temp file + while-read loop
+          STREAM="$(mktemp)"
+          grep -Ev '^\s*(#|$)' "$LIST" > "$STREAM" || true
+          if ! [[ -s "$STREAM" ]]; then
+            echo "::warning ::Repo list is empty; continuing with whatever repos AutoPkg already has"
+          fi
+
+          while IFS= read -r url; do
+            [[ -n "$url" ]] || continue
+            echo "repo-add $url"
+            $AUTOPKG_CMD repo-add "$url" || true
+          done < "$STREAM"
+
+          echo "Adding all repos…"
+          $AUTOPKG_CMD repo-add all || true
+          echo "Current repos:"
+          $AUTOPKG_CMD repo-list || true
 
       - name: Build all recipes from darwin-prod.txt
         env:
@@ -83,7 +101,7 @@ jobs:
           LIST="recipe_overrides/recipe-lists/darwin-prod.txt"
           [[ -f "$LIST" ]] || { echo "::error ::Recipe list not found at $LIST"; exit 1; }
 
-          # macOS bash 3.x lacks 'mapfile' — use a temp file + while-read loop
+          # macOS bash 3.x: no mapfile — use a temp file + while-read loop
           RECIPE_STREAM="$(mktemp)"
           grep -Ev '^\s*(#|$)' "$LIST" > "$RECIPE_STREAM" || true
           if ! [[ -s "$RECIPE_STREAM" ]]; then
@@ -96,13 +114,13 @@ jobs:
           successes=0; failures=0
           while IFS= read -r r; do
             # Prefer an override if present
-            OVR1="recipe_overrides/overrides/${r}.recipe"
+            OVR="recipe_overrides/overrides/${r}.recipe"
             TARGET="$r"
-            [[ -f "$OVR1" ]] && TARGET="$OVR1"
+            [[ -f "$OVR" ]] && TARGET="$OVR"
 
             echo "::group::Build $r (target: $TARGET)"
             if [[ "$TARGET" != "$r" ]]; then
-              echo "Verifying trust for override: $TARGET"
+              echo "Verifying trust for override"
               $AUTOPKG_CMD verify-trust-info "$TARGET"
             fi
 
