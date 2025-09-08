@@ -87,8 +87,8 @@ jobs:
             $AUTOPKG_CMD repo-add "$url" || true
           done < "$STREAM"
 
-          echo "Adding all repos…"
-          $AUTOPKG_CMD repo-add all || true
+          echo "Updating all repos…"
+          $AUTOPKG_CMD repo-update all || true
           echo "Current repos:"
           $AUTOPKG_CMD repo-list || true
 
