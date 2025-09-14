@@ -26,7 +26,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 90 # Keeps your builds from running too long
     env:
-      AUTOPKG_SHA256: "sha256:304f51506103b5daae44a977df9f53c0ee43f164813690b674b1d1437c833b03"
+      AUTOPKG_SHA256: "304f51506103b5daae44a977df9f53c0ee43f164813690b674b1d1437c833b03"
       AUTOPKG_URL: "https://github.com/autopkg/autopkg/releases/download/v2.7.6/autopkg-2.7.6.pkg"
     steps:
     - name: Checkout AutoPkg recipes
