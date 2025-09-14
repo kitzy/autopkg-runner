@@ -1,0 +1,33 @@
+Description: >
+  Builds Github Desktop.pkg using the upstream recipe, then uploads to Fleet
+  and opens a GitOps PR.
+Identifier: com.kitzy.fleet.GithubDesktop
+Input:
+  NAME: Github Desktop
+MinimumVersion: "2.0"
+ParentRecipe: com.github.homebysix.pkg.GitHubDesktop
+
+Process:
+  - Arguments:
+      automatic_install: false
+      fleet_api_token: "%FLEET_API_TOKEN%"
+      github_token: "%FLEET_GITOPS_GITHUB_TOKEN%"
+      pkg_path: "%pkg_path%"
+      platform: darwin
+      self_service: true
+      software_slug: github-desktop
+      software_title: "%NAME%"
+      version: "%version%"
+      fleet_api_base: "https://fleet.kitzy.net"
+      team_id: 4
+      git_repo_url: "https://github.com/kitzy/fleet-gitops"
+      git_base_branch: "main"
+      git_author_name: "autopkg-bot"
+      git_author_email: "autopkg-bot@kitzy.net"
+      team_yaml_path: "teams/workstations.yml"
+      software_dir: "lib/macos/software"
+      package_yaml_suffix: ".yml"
+      team_yaml_package_path_prefix: "../lib/macos/software/"
+      pr_labels: ["autopkg"]          # or ["autopkg","software-update"]
+      branch_prefix: "autopkg"
+    Processor: FleetGitOpsUploader
