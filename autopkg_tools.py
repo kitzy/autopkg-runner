@@ -140,7 +140,7 @@ class Recipe(object):
                     "/usr/local/bin/autopkg",
                     "run",
                     self.path,
-                    "-v",
+                    "-vvvv",
                     "--post",
                     "io.github.hjuutilainen.VirusTotalAnalyzer/VirusTotalAnalyzer",
                     "--report-plist",
