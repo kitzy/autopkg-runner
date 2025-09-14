@@ -119,7 +119,7 @@ jobs:
         jq -n --arg title "${{ env.TITLE }}" \
               --arg body "$BODY" \
               --arg head "$BRANCH_NAME" \
-           '{title: $title, body: $body, head: $head, "base": "${{ github.ref }}"}' | curl -s --request POST \
+           '{title: $title, body: $body, head: $head, "base": "${{ github.ref_name }}"}' | curl -s --request POST \
            --url https://api.github.com/repos/${{ github.repository }}/pulls \
            --header "authorization: Bearer $GITHUB_TOKEN" \
            --header 'content-type: application/json' \
