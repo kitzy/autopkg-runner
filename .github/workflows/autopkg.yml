@@ -29,7 +29,7 @@ jobs:
       AUTOPKG_SHA256: "304f51506103b5daae44a977df9f53c0ee43f164813690b674b1d1437c833b03"
       AUTOPKG_URL: "https://github.com/autopkg/autopkg/releases/download/v2.7.6/autopkg-2.7.6.pkg"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      FLEET_GITOPS_GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+      FLEET_GITOPS_GITHUB_TOKEN: ${{ secrets.FLEET_GITOPS_GITHUB_TOKEN }}
     steps:
     - name: Checkout AutoPkg recipes
       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 #v3.5.3 Pin SHA1 hash instead of version
