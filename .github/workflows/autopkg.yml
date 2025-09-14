@@ -63,7 +63,13 @@ jobs:
         python - <<'PY'
         import ssl, urllib.request
         ctx = ssl.create_default_context(cafile=ssl.get_default_verify_paths().openssl_cafile)
-        urllib.request.urlopen("https://fleet.kitzy.net", context=ctx)
+        try:
+            urllib.request.urlopen("https://fleet.kitzy.net", context=ctx)
+        except Exception as e:
+            print(f"HTTPS connectivity test failed: {e}")
+            raise
+        else:
+            print("HTTPS connectivity verified")
         PY
 
     - name: Configure AutoPkg and Git
