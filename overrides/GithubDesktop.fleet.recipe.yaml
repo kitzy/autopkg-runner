@@ -7,9 +7,9 @@ ParentRecipe: com.github.kitzy.fleet.GithubDesktop
 ParentRecipeTrustInfo:
   non_core_processors:
     FleetGitOpsUploader:
-      git_hash: 2d7731919b922cd20714636fc2d00a22a61351e9
+      git_hash: 12c2ae28bfa58080c2554833d4b3ecef9ef065e6
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader.py
-      sha256_hash: 1a3cd8fb10e64863b6407f276b90a3d836d22c4fa850306c37c34fe75ac35914
+      sha256_hash: a95b8002ca86b67bf45d4ae74c0d6c36447aa4ff081ca5195f4a011bd9e322aa
   parent_recipes:
     com.github.homebysix.download.GitHubDesktop:
       git_hash: 929f09a8dc248349e9ce35f7d519c253298317d1
