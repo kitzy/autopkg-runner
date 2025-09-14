@@ -539,8 +539,11 @@ class FleetGitOpsUploader(Processor):
                     installer_id = ver.get("installer_id") or ver.get("id")
                     hash_sha256 = ver.get("hash_sha256")
                     if not hash_sha256:
+                        sha256 = hashlib.sha256()
                         with open(pkg_path, "rb") as f:
-                            hash_sha256 = hashlib.sha256(f.read()).hexdigest()
+                            for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                                sha256.update(chunk)
+                        hash_sha256 = sha256.hexdigest()
                     return {
                         "title_id": title_id,
                         "installer_id": installer_id,
