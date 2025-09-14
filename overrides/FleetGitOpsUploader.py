@@ -569,10 +569,8 @@ class FleetGitOpsUploader(Processor):
         if post_install_script:
             pkg_block["post_install_script"] = {"contents": post_install_script}
 
-        # We store under top-level `package` to mirror common patterns.
-        data = {"package": pkg_block}
-
-        self._write_yaml(pkg_yaml_path, data)
+        # Write the package fields directly without a top-level wrapper.
+        self._write_yaml(pkg_yaml_path, pkg_block)
 
     def _ensure_team_yaml_has_package(self, team_yaml_path: Path, ref_path: str) -> bool:
         """Ensure team YAML includes software.packages with the given ref_path."""
