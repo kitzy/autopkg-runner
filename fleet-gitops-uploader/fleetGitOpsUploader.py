@@ -7,6 +7,7 @@
 #
 # Requires: requests, PyYAML; git CLI available.
 #
+
 from __future__ import annotations
 
 import os
