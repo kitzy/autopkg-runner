@@ -5,7 +5,7 @@
 # Uploads a package to Fleet and updates a Fleet GitOps repo with software YAML,
 # commits on a new branch, and opens a PR.
 #
-# Requires: requests, PyYAML; git CLI available.
+# Requires: PyYAML and git CLI available.
 #
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ import re
 import json
 import shutil
 import hashlib
+import io
 import tempfile
 import subprocess
 from datetime import datetime
@@ -25,10 +26,9 @@ try:
 except ImportError:
     raise ImportError("PyYAML is required. Install with: pip install PyYAML")
 
-try:
-    import requests
-except ImportError:
-    raise ImportError("requests is required. Install with: pip install requests")
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from autopkglib import Processor, ProcessorError
 
@@ -405,50 +405,64 @@ class FleetGitOpsUploader(Processor):
         post_install_script: str,
     ) -> dict:
         url = f"{base_url}/api/v1/fleet/software/package"
-        headers = {"Authorization": f"Bearer {token}"}
-
-        form = {
-            "team_id": str(team_id),
-            "self_service": json.dumps(bool(self_service)).lower(),
-        }
         # API rules: only one of include/exclude
         if labels_include_any and labels_exclude_any:
             raise ProcessorError("Only one of labels_include_any or labels_exclude_any may be specified.")
 
-        if labels_include_any:
-            # Note: API accepts labels_include_any as array form field; send multiple entries
-            # requests can send tuples for repeating fields
-            pass
-        if labels_exclude_any:
-            pass
+        boundary = "----FleetUploadBoundary" + hashlib.sha1(os.urandom(16)).hexdigest()
+        body = io.BytesIO()
 
-        files = [
-            ("software", (pkg_path.name, open(pkg_path, "rb"), "application/octet-stream")),
-        ]
+        def write_field(name: str, value: str):
+            body.write(f"--{boundary}\r\n".encode())
+            body.write(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode())
+            body.write(str(value).encode())
+            body.write(b"\r\n")
 
-        data = []
-        for k, v in form.items():
-            data.append((k, v))
+        def write_file(name: str, filename: str, path: Path):
+            body.write(f"--{boundary}\r\n".encode())
+            body.write(
+                f'Content-Disposition: form-data; name="{name}"; filename="{filename}"\r\n'.encode()
+            )
+            body.write(b"Content-Type: application/octet-stream\r\n\r\n")
+            with open(path, "rb") as f:
+                shutil.copyfileobj(f, body)
+            body.write(b"\r\n")
+
+        write_field("team_id", str(team_id))
+        write_field("self_service", json.dumps(bool(self_service)).lower())
         if install_script:
-            data.append(("install_script", install_script))
+            write_field("install_script", install_script)
         if uninstall_script:
-            data.append(("uninstall_script", uninstall_script))
+            write_field("uninstall_script", uninstall_script)
         if pre_install_query:
-            data.append(("pre_install_query", pre_install_query))
+            write_field("pre_install_query", pre_install_query)
         if post_install_script:
-            data.append(("post_install_script", post_install_script))
+            write_field("post_install_script", post_install_script)
         if automatic_install:
-            data.append(("automatic_install", "true"))
+            write_field("automatic_install", "true")
 
         for label in labels_include_any:
-            data.append(("labels_include_any", label))
+            write_field("labels_include_any", label)
         for label in labels_exclude_any:
-            data.append(("labels_exclude_any", label))
+            write_field("labels_exclude_any", label)
 
-        resp = requests.post(url, headers=headers, files=files, data=data, timeout=900)
-        if resp.status_code != 200:
-            raise ProcessorError(f"Fleet upload failed: {resp.status_code} {resp.text}")
-        return resp.json()
+        write_file("software", pkg_path.name, pkg_path)
+        body.write(f"--{boundary}--\r\n".encode())
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        }
+        req = urllib.request.Request(url, data=body.getvalue(), headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=900) as resp:
+                resp_body = resp.read()
+                status = resp.getcode()
+        except urllib.error.HTTPError as e:
+            raise ProcessorError(f"Fleet upload failed: {e.code} {e.read().decode()}")
+        if status != 200:
+            raise ProcessorError(f"Fleet upload failed: {status} {resp_body.decode()}")
+        return json.loads(resp_body or b"{}")
 
     def _read_yaml(self, path: Path) -> dict:
         if not path.exists():
@@ -561,17 +575,35 @@ class FleetGitOpsUploader(Processor):
             "Authorization": f"Bearer {github_token}",
             "Accept": "application/vnd.github+json",
         }
-        payload = {"title": title, "head": head, "base": base, "body": body, "maintainer_can_modify": True}
-        r = requests.post(api, headers=headers, json=payload, timeout=60)
-        if r.status_code not in (201, 422):
-            # 422 if PR already exists; try to discover URL
-            raise ProcessorError(f"PR creation failed: {r.status_code} {r.text}")
-        pr = r.json()
+        payload = {
+            "title": title,
+            "head": head,
+            "base": base,
+            "body": body,
+            "maintainer_can_modify": True,
+        }
+        data = json.dumps(payload).encode()
+        req = urllib.request.Request(api, data=data, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                status = resp.getcode()
+                resp_body = resp.read().decode()
+        except urllib.error.HTTPError as e:
+            status = e.getcode()
+            resp_body = e.read().decode()
+        if status not in (201, 422):
+            raise ProcessorError(f"PR creation failed: {status} {resp_body}")
+        pr = json.loads(resp_body or "{}")
         pr_url = pr.get("html_url") or self._find_existing_pr_url(github_repo, github_token, head, base)
 
         if labels and pr_url and "number" in pr:
             issue_api = f"https://api.github.com/repos/{github_repo}/issues/{pr['number']}/labels"
-            requests.post(issue_api, headers=headers, json={"labels": labels}, timeout=30)
+            issue_data = json.dumps({"labels": labels}).encode()
+            issue_req = urllib.request.Request(issue_api, data=issue_data, headers=headers, method="POST")
+            try:
+                urllib.request.urlopen(issue_req, timeout=30)
+            except urllib.error.HTTPError:
+                pass
 
         return pr_url or ""
 
@@ -581,9 +613,15 @@ class FleetGitOpsUploader(Processor):
             "Accept": "application/vnd.github+json",
         }
         q = f"repo:{repo} is:pr is:open head:{head} base:{base}"
-        r = requests.get(f"https://api.github.com/search/issues?q={requests.utils.quote(q)}", headers=headers, timeout=30)
-        if r.ok and r.json().get("items"):
-            return r.json()["items"][0]["html_url"]
+        url = f"https://api.github.com/search/issues?q={urllib.parse.quote(q)}"
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode())
+        except urllib.error.HTTPError:
+            return ""
+        if data.get("items"):
+            return data["items"][0]["html_url"]
         return ""
 
 
