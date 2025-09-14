@@ -57,7 +57,6 @@ jobs:
         defaults write com.github.autopkg AUTOPKG_PROCESSOR_SEARCH_DIRS "$(pwd)"/fleet-gitops-uploader/
         defaults write com.github.autopkg FAIL_RECIPES_WITHOUT_TRUST_INFO -bool YES
         defaults write com.github.autopkg GITHUB_TOKEN "${{ secrets.GITHUB_TOKEN }}"
-        defaults write com.github.autopkg SLACK_WEBHOOK_URL "None" #If you change this variable name above, change it here too
         defaults write com.github.autopkg FLEET_API_TOKEN "${{ secrets.FLEET_API_TOKEN }}"
         git config --global user.name "runner"
         git config --global user.email "runner@githubactions.local"
@@ -77,7 +76,7 @@ jobs:
         fi
       env:
         RECIPE: ${{ github.event.inputs.recipe }}
-        SLACK_WEBHOOK_URL: None #If you change this variable name above, change it here too
+        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL #If you change this variable name above, change it here too
 
     - name: Create Trust Info pull request
       if: env.TITLE
