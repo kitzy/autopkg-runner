@@ -1,5 +1,9 @@
 name: Autopkg run
 
+permissions:
+  contents: write
+  pull-requests: write    # optional but useful if the workflow opens PRs
+
 on:
   watch:
     types: [started]
@@ -110,12 +114,13 @@ jobs:
         git checkout -b $BRANCH_NAME
         git add overrides/
         git commit -m "${{ env.TITLE }}"
+        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
         git push --set-upstream origin $BRANCH_NAME
         jq -n --arg title "${{ env.TITLE }}" \
               --arg body "$BODY" \
               --arg head "$BRANCH_NAME" \
            '{title: $title, body: $body, head: $head, "base": "${{ github.ref }}"}' | curl -s --request POST \
            --url https://api.github.com/repos/${{ github.repository }}/pulls \
-           --header "authorization: Bearer $FLEET_GITOPS_GITHUB_TOKEN" \
+           --header "authorization: Bearer $GITHUB_TOKEN" \
            --header 'content-type: application/json' \
            -d@-
