@@ -19,7 +19,7 @@ Upload a freshly built installer to Fleet using the Software API, then create or
 
 - Python 3.9+
 - AutoPkg
-- `requests` and `PyYAML` Python packages
+- `requests`, `PyYAML`, and `certifi` Python packages
 - `git` CLI on PATH
 - GitHub token with `repo` scope if pushing to a different repo or if you need elevated permissions
 - Fleet server and API token with rights to upload software for the target team
@@ -58,6 +58,8 @@ All inputs can be provided as AutoPkg variables in your recipe or via `-k` overr
 | `fleet_api_base` | Yes | str | Fleet base URL, for example `https://fleet.example.com`. |
 | `fleet_api_token` | Yes | str | Fleet API token. |
 | `team_id` | Yes | int | Fleet Team ID for the upload. |
+| `fleet_ca_path` | No | str | Path to custom CA bundle; defaults to certifi bundle. |
+| `fleet_skip_tls_verify` | No | bool | Skip TLS verification (NOT recommended). |
 | `self_service` | No | bool | Make available in self service. Default `false`. |
 | `automatic_install` | No | bool | On macOS, create automatic install policy. Default `false`. |
 | `labels_include_any` | No | list[str] | Labels required for targeting. Only one of include or exclude may be set. |
@@ -79,6 +81,9 @@ All inputs can be provided as AutoPkg variables in your recipe or via `-k` overr
 | `pr_labels` | No | list[str] | Labels to set on the PR. |
 | `software_slug` | No | str | Override slug used for file and branch names. Defaults to normalized `software_title`. |
 | `branch_prefix` | No | str | Optional prefix for branch names, for example `autopkg`. |
+
+`fleet_ca_path` lets you provide a custom CA bundle, while `fleet_skip_tls_verify`
+can disable TLS verification if set to true (use only for testing).
 
 ---
 
