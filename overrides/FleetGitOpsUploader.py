@@ -520,12 +520,9 @@ class FleetGitOpsUploader(Processor):
         except urllib.error.HTTPError as e:
             raise ProcessorError(f"Failed to look up existing package: {e.code} {e.read().decode()}")
         for pkg in data.get("software_packages", []):
-            name = (
-                pkg.get("name")
-                or pkg.get("title")
-                or pkg.get("software_title", {}).get("name")
-                or ""
-            )
+            # The Fleet API is expected to return the package name in the "name" field.
+            # If the API schema changes, update this logic accordingly.
+            name = pkg.get("name", "")
             if name.lower() != software_title.lower():
                 continue
             versions = pkg.get("versions") or [pkg]
