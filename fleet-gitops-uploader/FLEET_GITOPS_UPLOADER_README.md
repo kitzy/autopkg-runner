@@ -75,7 +75,7 @@ All inputs can be provided as AutoPkg variables in your recipe or via `-k` overr
 | `package_yaml_suffix` | No | str | Suffix for per title YAML. Default `.package.yml`. |
 | `team_yaml_package_path_prefix` | No | str | Path prefix used inside team YAML. Default `../lib/macos/software/`. |
 | `github_repo` | Yes | str | `owner/repo` for PR creation. |
-| `github_token` | No | str | GitHub token. If empty, uses `GITHUB_TOKEN` env. |
+| `github_token` | No | str | GitHub token. If empty, uses `GITHUB_TOKEN` env. When set, the processor rewrites the repo URL with the token so `git clone` and `git push` authenticate without prompts. |
 | `pr_labels` | No | list[str] | Labels to set on the PR. |
 | `software_slug` | No | str | Override slug used for file and branch names. Defaults to normalized `software_title`. |
 | `branch_prefix` | No | str | Optional prefix for branch names, for example `autopkg`. |
@@ -293,6 +293,7 @@ You can run the processor outside Actions to validate behavior.
 ## Security Notes
 
 - Avoid echoing tokens in logs. The example Actions job relies on environment variables and never prints secrets.
+- When a GitHub token is provided, the processor rewrites the Git repository URL with the token so that cloning and pushing use authenticated HTTPS URLs without prompts. `GIT_TERMINAL_PROMPT` is set to `0` to prevent interactive authentication.
 - Consider scoping the GitHub token to the target repo only.
 - Rotate the Fleet API token periodically.
 
