@@ -279,6 +279,8 @@ class FleetGitOpsUploader(Processor):
             fleet_api_base,
             fleet_token,
             pkg_path,
+            software_title,
+            version,
             team_id,
             self_service,
             automatic_install,
@@ -409,6 +411,8 @@ class FleetGitOpsUploader(Processor):
         base_url,
         token,
         pkg_path: Path,
+        software_title: str,
+        version: str,
         team_id: int,
         self_service: bool,
         automatic_install: bool,
@@ -474,10 +478,77 @@ class FleetGitOpsUploader(Processor):
                 resp_body = resp.read()
                 status = resp.getcode()
         except urllib.error.HTTPError as e:
+            if e.code == 409:
+                existing = self._fleet_get_existing_package(
+                    base_url,
+                    token,
+                    team_id,
+                    software_title,
+                    version,
+                    pkg_path,
+                )
+                return {
+                    "software_package": {
+                        "title_id": existing["title_id"],
+                        "installer_id": existing["installer_id"],
+                        "hash_sha256": existing["hash_sha256"],
+                        "version": version,
+                    }
+                }
             raise ProcessorError(f"Fleet upload failed: {e.code} {e.read().decode()}")
         if status != 200:
             raise ProcessorError(f"Fleet upload failed: {status} {resp_body.decode()}")
         return json.loads(resp_body or b"{}")
+
+    def _fleet_get_existing_package(
+        self,
+        base_url: str,
+        token: str,
+        team_id: int,
+        software_title: str,
+        version: str,
+        pkg_path: Path,
+    ) -> dict:
+        """Locate an existing software package in Fleet."""
+        query = urllib.parse.quote(software_title)
+        url = f"{base_url}/api/v1/fleet/software/packages?team_id={team_id}&query={query}"
+        headers = {"Authorization": f"Bearer {token}"}
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read() or b"{}")
+        except urllib.error.HTTPError as e:
+            raise ProcessorError(f"Failed to look up existing package: {e.code} {e.read().decode()}")
+        for pkg in data.get("software_packages", []):
+            name = (
+                pkg.get("name")
+                or pkg.get("title")
+                or pkg.get("software_title", {}).get("name")
+                or ""
+            )
+            if name.lower() != software_title.lower():
+                continue
+            versions = pkg.get("versions") or [pkg]
+            for ver in versions:
+                if ver.get("version") == version:
+                    title_id = (
+                        pkg.get("title_id")
+                        or pkg.get("software_title_id")
+                        or pkg.get("id")
+                    )
+                    installer_id = ver.get("installer_id") or ver.get("id")
+                    hash_sha256 = ver.get("hash_sha256")
+                    if not hash_sha256:
+                        with open(pkg_path, "rb") as f:
+                            hash_sha256 = hashlib.sha256(f.read()).hexdigest()
+                    return {
+                        "title_id": title_id,
+                        "installer_id": installer_id,
+                        "hash_sha256": hash_sha256,
+                    }
+        raise ProcessorError(
+            "Fleet reported package already exists but could not retrieve details"
+        )
 
     def _read_yaml(self, path: Path) -> dict:
         if not path.exists():
