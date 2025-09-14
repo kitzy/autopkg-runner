@@ -38,11 +38,6 @@ class FleetGitOpsUploader(Processor):
 
     description = __doc__
     input_variables = {
-        "defaults_path": {
-            "required": False,
-            "default": "",
-            "description": "Path to a YAML file containing default inputs.",
-        },
         # --- Required basics ---
         "pkg_path": {
             "required": True,
@@ -64,7 +59,7 @@ class FleetGitOpsUploader(Processor):
 
         # --- Fleet API ---
         "fleet_api_base": {
-            "required": False,
+            "required": True,
             "description": "Fleet base URL, e.g., https://fleet.example.com",
         },
         "fleet_api_token": {
@@ -72,7 +67,7 @@ class FleetGitOpsUploader(Processor):
             "description": "Fleet API token (Bearer).",
         },
         "team_id": {
-            "required": False,
+            "required": True,
             "description": "Fleet team ID to attach the uploaded package to.",
         },
 
@@ -120,7 +115,7 @@ class FleetGitOpsUploader(Processor):
 
         # --- Git / GitHub ---
         "git_repo_url": {
-            "required": False,
+            "required": True,
             "description": "Git URL of your Fleet GitOps repo (HTTPS).",
         },
         "git_base_branch": {
@@ -141,7 +136,7 @@ class FleetGitOpsUploader(Processor):
 
         # Pathing inside repo
         "team_yaml_path": {
-            "required": False,
+            "required": True,
             "description": "Path to the team YAML (e.g., 'teams/workstations.yml').",
         },
         "software_dir": {
@@ -162,7 +157,7 @@ class FleetGitOpsUploader(Processor):
 
         # GitHub PR
         "github_repo": {
-            "required": False,
+            "required": True,
             "description": "GitHub repo in 'owner/repo' form for PR creation.",
         },
         "github_token": {
@@ -229,29 +224,6 @@ class FleetGitOpsUploader(Processor):
         return ""
 
     def main(self):
-        # Load defaults file if provided
-        defaults_path = self.env.get("defaults_path", "")
-        if defaults_path:
-            defaults_file = Path(defaults_path).expanduser()
-            if defaults_file.exists():
-                with defaults_file.open("r", encoding="utf-8") as f:
-                    defaults = yaml.safe_load(f) or {}
-                for key, value in defaults.items():
-                    if key not in self.env:
-                        self.env[key] = value
-
-        # Validate required keys after merging defaults
-        required_keys = [
-            "fleet_api_base",
-            "team_id",
-            "git_repo_url",
-            "team_yaml_path",
-            "github_repo",
-        ]
-        missing = [k for k in required_keys if not self.env.get(k)]
-        if missing:
-            raise ProcessorError(f"Missing required input(s): {', '.join(missing)}")
-
         # Inputs
         pkg_path = Path(self.env["pkg_path"]).expanduser().resolve()
         if not pkg_path.is_file():
