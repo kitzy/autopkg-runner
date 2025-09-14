@@ -81,7 +81,7 @@ jobs:
         defaults write com.github.autopkg AUTOPKG_PROCESSOR_SEARCH_DIRS "$(pwd)"/fleet-gitops-uploader/
         defaults write com.github.autopkg FAIL_RECIPES_WITHOUT_TRUST_INFO -bool YES
         defaults write com.github.autopkg GITHUB_TOKEN "${{ secrets.GITHUB_TOKEN }}"
-        defaults write com.github.autopkg FLEET_GITOPS_GITHUB_TOKEN "$FLEET_GITOPS_GITHUB_TOKEN"
+        defaults write com.github.autopkg FLEET_GITOPS_GITHUB_TOKEN "${{ secrets.FLEET_GITOPS_GITHUB_TOKEN }}"
         defaults write com.github.autopkg FLEET_API_TOKEN "${{ secrets.FLEET_API_TOKEN }}"
         git config --global user.name "runner"
         git config --global user.email "runner@githubactions.local"
