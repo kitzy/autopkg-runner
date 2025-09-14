@@ -406,6 +406,37 @@ class FleetGitOpsUploader(Processor):
         if status:
             self._git(["commit", "-m", message], cwd=cwd)
 
+    @staticmethod
+    def _pr_body(
+        software_title: str,
+        version: str,
+        slug: str,
+        title_id: int,
+        installer_id: int,
+    ) -> str:
+        """Compose a concise markdown summary for the PR body.
+
+        Examples
+        --------
+        >>> FleetGitOpsUploader._pr_body("Firefox", "1.2.3", "Mozilla/firefox", 42, 99)
+        '### Firefox 1.2.3\n\n- Fleet title ID: `42`\n- Fleet installer ID: `99`\n- Software slug: `Mozilla/firefox`\n- [Changelog](https://github.com/Mozilla/firefox/releases/tag/1.2.3)'
+        """
+
+        lines = [
+            f"### {software_title} {version}",
+            "",
+            f"- Fleet title ID: `{title_id}`",
+            f"- Fleet installer ID: `{installer_id}`",
+        ]
+
+        if slug:
+            lines.append(f"- Software slug: `{slug}`")
+            if "/" in slug:
+                changelog = f"https://github.com/{slug}/releases/tag/{version}"
+                lines.append(f"- [Changelog]({changelog})")
+
+        return "\n".join(lines)
+
     def _fleet_upload_package(
         self,
         base_url,
