@@ -22,7 +22,7 @@ Process:
       automatic_install: false
       defaults_path: fleet.defaults.yaml
       fleet_api_token: "%FLEET_API_TOKEN%"
-      github_token: "%GITHUB_TOKEN%"
+      github_token: "%FLEET_GITOPS_GITHUB_TOKEN%"
       pkg_path: "%pkg_path%"
       platform: darwin
       self_service: true

@@ -166,7 +166,7 @@ class FleetGitOpsUploader(Processor):
         "github_token": {
             "required": False,
             "default": "",
-            "description": "GitHub token. If empty, will use GITHUB_TOKEN env.",
+            "description": "GitHub token. If empty, will use FLEET_GITOPS_GITHUB_TOKEN env.",
         },
         "pr_labels": {
             "required": False,
@@ -262,9 +262,11 @@ class FleetGitOpsUploader(Processor):
         github_repo = self.env.get("github_repo") or self._derive_github_repo(git_repo_url)
         if not github_repo:
             raise ProcessorError("github_repo not provided and could not derive from git_repo_url")
-        github_token = self.env.get("github_token") or os.environ.get("GITHUB_TOKEN", "")
+        github_token = self.env.get("github_token") or os.environ.get("FLEET_GITOPS_GITHUB_TOKEN", "")
         if not github_token:
-            raise ProcessorError("GitHub token not provided (github_token or GITHUB_TOKEN env).")
+            raise ProcessorError(
+                "GitHub token not provided (github_token or FLEET_GITOPS_GITHUB_TOKEN env)."
+            )
         pr_labels = list(self.env.get("pr_labels", []))
         branch_prefix = self.env.get("branch_prefix", "").strip()
 
