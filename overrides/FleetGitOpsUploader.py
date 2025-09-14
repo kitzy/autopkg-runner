@@ -29,12 +29,18 @@ except ImportError:
 import urllib.request
 import urllib.parse
 import urllib.error
+import ssl
+import certifi
 
 from autopkglib import Processor, ProcessorError
 
 
 class FleetGitOpsUploader(Processor):
-    """Upload AutoPkg-built installer to Fleet and update GitOps YAML in a PR."""
+    """Upload AutoPkg-built installer to Fleet and update GitOps YAML in a PR.
+
+    Supports custom CA bundles via ``fleet_ca_path`` or disabling TLS verification
+    with ``fleet_skip_tls_verify``.
+    """
 
     description = __doc__
     input_variables = {
@@ -69,6 +75,16 @@ class FleetGitOpsUploader(Processor):
         "team_id": {
             "required": True,
             "description": "Fleet team ID to attach the uploaded package to.",
+        },
+        "fleet_ca_path": {
+            "required": False,
+            "default": "",
+            "description": "Path to custom CA bundle; defaults to certifi bundle.",
+        },
+        "fleet_skip_tls_verify": {
+            "required": False,
+            "default": False,
+            "description": "Skip TLS verification (NOT recommended).",
         },
 
         # Optional Fleet install flags
@@ -193,6 +209,12 @@ class FleetGitOpsUploader(Processor):
         "git_branch": {"description": "The branch name created for the PR."},
         "pull_request_url": {"description": "The created PR URL."},
     }
+
+    def _ssl_context(self):
+        if self.env.get("fleet_skip_tls_verify"):
+            return ssl._create_unverified_context()
+        cafile = self.env.get("fleet_ca_path") or certifi.where()
+        return ssl.create_default_context(cafile=cafile)
 
     def _derive_github_repo(self, git_repo_url: str) -> str:
         """
@@ -460,7 +482,7 @@ class FleetGitOpsUploader(Processor):
         }
         req = urllib.request.Request(url, data=body.getvalue(), headers=headers)
         try:
-            with urllib.request.urlopen(req, timeout=900) as resp:
+            with urllib.request.urlopen(req, timeout=900, context=self._ssl_context()) as resp:
                 resp_body = resp.read()
                 status = resp.getcode()
         except urllib.error.HTTPError as e:
@@ -590,7 +612,7 @@ class FleetGitOpsUploader(Processor):
         data = json.dumps(payload).encode()
         req = urllib.request.Request(api, data=data, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=60, context=self._ssl_context()) as resp:
                 status = resp.getcode()
                 resp_body = resp.read().decode()
         except urllib.error.HTTPError as e:
@@ -606,7 +628,7 @@ class FleetGitOpsUploader(Processor):
             issue_data = json.dumps({"labels": labels}).encode()
             issue_req = urllib.request.Request(issue_api, data=issue_data, headers=headers, method="POST")
             try:
-                urllib.request.urlopen(issue_req, timeout=30)
+                urllib.request.urlopen(issue_req, timeout=30, context=self._ssl_context())
             except urllib.error.HTTPError:
                 pass
 
@@ -621,7 +643,7 @@ class FleetGitOpsUploader(Processor):
         url = f"https://api.github.com/search/issues?q={urllib.parse.quote(q)}"
         req = urllib.request.Request(url, headers=headers)
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=30, context=self._ssl_context()) as resp:
                 data = json.loads(resp.read().decode())
         except urllib.error.HTTPError:
             return ""
