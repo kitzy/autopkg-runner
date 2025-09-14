@@ -51,6 +51,21 @@ jobs:
         if [[ $? != "0" ]]; then exit 1; fi
         sudo installer -pkg /tmp/autopkg.pkg -target /
 
+    - name: Install certifi and set CA bundle
+      run: |
+        python -m pip install --upgrade certifi
+        SSL_CERT_FILE=$(python -m certifi)
+        echo "SSL_CERT_FILE=$SSL_CERT_FILE" >> "$GITHUB_ENV"
+        echo "REQUESTS_CA_BUNDLE=$SSL_CERT_FILE" >> "$GITHUB_ENV"
+
+    - name: Verify HTTPS connectivity
+      run: |
+        python - <<'PY'
+        import ssl, urllib.request
+        ctx = ssl.create_default_context(cafile=ssl.get_default_verify_paths().openssl_cafile)
+        urllib.request.urlopen("https://fleet.kitzy.net", context=ctx)
+        PY
+
     - name: Configure AutoPkg and Git
       run: |
         defaults write com.github.autopkg RECIPE_OVERRIDE_DIRS "$(pwd)"/overrides/
