@@ -28,7 +28,9 @@ from optparse import OptionParser
 from datetime import datetime
 
 DEBUG = os.environ.get("DEBUG", False)
-SLACK_WEBHOOK = os.environ.get("SLACK_WEBHOOK_URL", None)
+SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK_URL")
+if not SLACK_WEBHOOK or SLACK_WEBHOOK.lower() == "none":
+    SLACK_WEBHOOK = None
 JAMF_REPO = os.path.join(os.getenv("GITHUB_WORKSPACE", "/tmp/"), "jamf-repo")
 OVERRIDES_DIR = os.path.relpath("overrides/")
 RECIPE_TO_RUN = os.environ.get("RECIPE", None)
