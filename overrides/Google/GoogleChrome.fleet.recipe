@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Identifier</key>
+	<string>local.fleet.GoogleChrome</string>
+	<key>Input</key>
+	<dict>
+		<key>DOWNLOAD_URL</key>
+		<string>https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg</string>
+		<key>NAME</key>
+		<string>GoogleChrome</string>
+	</dict>
+	<key>ParentRecipe</key>
+	<string>com.github.autopkg.pkg.googlechrome</string>
+    <key>Description</key>
+    <string>Builds Google Chrome.pkg using the upstream recipe, then uploads to Fleet and opens a GitOps PR.</string>
+
+    <key>Identifier</key>
+    <string>com.kitzy.fleet.GoogleChrome</string>
+
+    <key>MinimumVersion</key>
+    <string>2.0</string>
+
+    <key>Input</key>
+    <dict>
+        <key>NAME</key>
+        <string>Google Chrome</string>
+    </dict>
+
+    <key>Process</key>
+    <array>
+        <dict>
+            <key>Processor</key>
+            <string>local.processors/FleetGitOpsUploader</string>
+            <key>Arguments</key>
+            <dict>
+                <!-- Outputs from the parent recipe -->
+                <key>pkg_path</key>
+                <string>%pathname%</string>
+                <key>software_title</key>
+                <string>%NAME%</string>
+                <key>version</key>
+                <string>%version%</string>
+                <key>platform</key>
+                <string>darwin</string>
+
+                <!-- Load shared non-secrets from your repo (the processor now supports this) -->
+                <key>defaults_path</key>
+                <string>config/fleet.defaults.yaml</string>
+
+                <!-- Tokens are secrets: resolve via -k or env/prefs fallback in your patched processor -->
+                <!-- If you kept the fallback logic, you may omit these and let env/prefs supply them. -->
+                <key>fleet_api_token</key>
+                <string>%FLEET_API_TOKEN%</string>
+                <key>github_token</key>
+                <string>%GITHUB_TOKEN%</string>
+
+                <!-- Optional: if you want a predictable slug/branch for Chrome -->
+                <key>software_slug</key>
+                <string>google-chrome</string>
+
+                <!-- Fleet prefs -->
+                <key>self_service</key>
+                <true/>
+                <key>automatic_install</key>
+                <false/>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>
