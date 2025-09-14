@@ -37,12 +37,7 @@ class FleetGitOpsUploader(Processor):
 
     description = __doc__
     input_variables = {
-                "defaults_path": {
-            "required": False,
-            "default": "",
-            "description": "Optional path to a YAML or JSON file with shared defaults to load before reading inputs.",
-        },
-# --- Required basics ---
+        # --- Required basics ---
         "pkg_path": {
             "required": True,
             "description": "Path to the built .pkg from AutoPkg.",
@@ -194,50 +189,40 @@ class FleetGitOpsUploader(Processor):
         "git_branch": {"description": "The branch name created for the PR."},
         "pull_request_url": {"description": "The created PR URL."},
     }
-    def _load_defaults(self):
+
+    def _derive_github_repo(self, git_repo_url: str) -> str:
         """
-        Load shared defaults from a YAML (.yml/.yaml) or JSON file into self.env
-        without overwriting any keys already set by recipe or -k overrides.
-        Intended for non-secret values only.
+        Derive 'owner/repo' from a git repo URL.
+        Supports https://github.com/owner/repo(.git)? and git@github.com:owner/repo(.git)?
+        Returns empty string if it can't be derived.
         """
-        dp = (self.env.get("defaults_path") or "").strip()
-        if not dp:
-            return
-        from pathlib import Path
-        import json
-        try:
-            import yaml  # type: ignore
-        except Exception:
-            yaml = None
+        if not git_repo_url:
+            return ""
+        s = git_repo_url.strip()
+        # SSH: git@github.com:owner/repo.git
+        if s.startswith("git@"):
+            try:
+                path_part = s.split(":", 1)[1]
+            except IndexError:
+                return ""
+            if path_part.endswith(".git"):
+                path_part = path_part[:-4]
+            return path_part.strip("/") if path_part.count("/") == 1 else ""
+        # HTTPS: https://github.com/owner/repo or with .git
+        if s.startswith("http://") or s.startswith("https://"):
+            if "github.com/" not in s:
+                return ""
+            after_host = s.split("github.com/", 1)[1]
+            if after_host.endswith(".git"):
+                after_host = after_host[:-4]
+            after_host = after_host.strip("/")
+            return after_host if after_host.count("/") == 1 else ""
+        # Fallback: already owner/repo
+        if s.count("/") == 1 and ":" not in s and " " not in s:
+            return s
+        return ""
 
-        p = Path(dp).expanduser().resolve()
-        if not p.exists():
-            raise ProcessorError(f"defaults_path not found: {p}")
-
-        if p.suffix.lower() in (".yml", ".yaml"):
-            if yaml is None:
-                raise ProcessorError("PyYAML is required to read YAML defaults. Install with: pip install PyYAML")
-            with p.open("r", encoding="utf-8") as f:
-                data = yaml.safe_load(f) or {}
-        else:
-            with p.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-
-        if not isinstance(data, dict):
-            raise ProcessorError("Defaults file must contain a top-level mapping of keys to values.")
-
-        # Warn if secrets appear in the defaults file
-        for secret_key in ("fleet_api_token", "github_token", "FLEET_API_TOKEN", "GITHUB_TOKEN"):
-            if secret_key in data:
-                self.output(f"WARNING: '{secret_key}' found in defaults file; do not commit secrets to git.", verbose_level=1)
-
-        # Only set keys that aren't already present
-        for k, v in data.items():
-            if k not in self.env or self.env.get(k) in ("", None):
-                self.env[k] = v
-    
     def main(self):
-        self._load_defaults()
         # Inputs
         pkg_path = Path(self.env["pkg_path"]).expanduser().resolve()
         if not pkg_path.is_file():
