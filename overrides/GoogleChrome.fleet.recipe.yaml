@@ -6,8 +6,9 @@ ParentRecipe: com.github.kitzy.fleet.GoogleChrome
 ParentRecipeTrustInfo:
   non_core_processors:
     FleetGitOpsUploader:
-      path: ''
-      sha256_hash: PROCESSOR FILEPATH NOT FOUND
+      git_hash: ab86416072b423f9d9afb4f6bc158cc7944e3e03
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader.py
+      sha256_hash: 6f9777cfac29cd6638bce617a077a12cd9bbffe63ff29f023d5268ed41068eee
   parent_recipes:
     com.github.autopkg.download.googlechrome:
       git_hash: 6f8bd33df3f7ab53eb679749eae8f04227790652
@@ -18,7 +19,6 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.recipes/GoogleChrome/GoogleChrome.pkg.recipe
       sha256_hash: 5acdf716353ccc57f021008bc5b4b55a5cb4e578e0f96864b71d4d2d29742ec8
     com.github.kitzy.fleet.GoogleChrome:
-      git_hash: 0dbbca924e26bba58c4bc2780098dbefd5bee94f
-      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Google
-        Chrome/GoogleChrome.fleet.recipe.yaml
+      git_hash: ab86416072b423f9d9afb4f6bc158cc7944e3e03
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GoogleChrome.fleet.recipe.yaml
       sha256_hash: 03d1508fe03b9da63d1609b3635f837312e6bbc694749563085aaa022e6e7364
