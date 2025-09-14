@@ -23,7 +23,7 @@ Process:
       defaults_path: fleet.defaults.yaml
       fleet_api_token: "%FLEET_API_TOKEN%"
       github_token: "%GITHUB_TOKEN%"
-      pkg_path: "%pathname%"
+      pkg_path: "%pkg_path%"
       platform: darwin
       self_service: true
       software_slug: google-chrome
