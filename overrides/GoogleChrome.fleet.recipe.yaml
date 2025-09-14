@@ -29,4 +29,16 @@ Process:
       software_slug: google-chrome
       software_title: "%NAME%"
       version: "%version%"
+      fleet_api_base: "https://fleet.kitzy.net"
+      team_id: 4
+      git_repo_url: "https://github.com/kitzy/fleet-gitops"
+      git_base_branch: "main"
+      git_author_name: "autopkg-bot"
+      git_author_email: "autopkg-bot@kitzy.net"
+      team_yaml_path: "teams/workstations.yml"
+      software_dir: "lib/macos/software"
+      package_yaml_suffix: ".yml"
+      team_yaml_package_path_prefix: "../lib/macos/software/"
+      pr_labels: ["autopkg"]          # or ["autopkg","software-update"]
+      branch_prefix: "autopkg"
     Processor: FleetGitOpsUploader
