@@ -479,19 +479,23 @@ class FleetGitOpsUploader(Processor):
                 status = resp.getcode()
         except urllib.error.HTTPError as e:
             if e.code == 409:
-                existing = self._fleet_get_existing_package(
-                    base_url,
-                    token,
-                    team_id,
-                    software_title,
-                    version,
-                    pkg_path,
-                )
+                body = e.read() or b"{}"
+                data = json.loads(body)
+                pkg = data.get("software_package", {})
+                title_id = pkg.get("title_id")
+                installer_id = pkg.get("installer_id")
+                hash_sha256 = pkg.get("hash_sha256")
+                if not hash_sha256:
+                    sha256 = hashlib.sha256()
+                    with open(pkg_path, "rb") as f:
+                        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                            sha256.update(chunk)
+                    hash_sha256 = sha256.hexdigest()
                 return {
                     "software_package": {
-                        "title_id": existing["title_id"],
-                        "installer_id": existing["installer_id"],
-                        "hash_sha256": existing["hash_sha256"],
+                        "title_id": title_id,
+                        "installer_id": installer_id,
+                        "hash_sha256": hash_sha256,
                         "version": version,
                     }
                 }
@@ -499,61 +503,6 @@ class FleetGitOpsUploader(Processor):
         if status != 200:
             raise ProcessorError(f"Fleet upload failed: {status} {resp_body.decode()}")
         return json.loads(resp_body or b"{}")
-
-    def _fleet_get_existing_package(
-        self,
-        base_url: str,
-        token: str,
-        team_id: int,
-        software_title: str,
-        version: str,
-        pkg_path: Path,
-    ) -> dict:
-        """Locate an existing software package in Fleet."""
-        query = urllib.parse.quote(software_title)
-        url = f"{base_url}/api/v1/fleet/software/packages?team_id={team_id}&query={query}"
-        headers = {"Authorization": f"Bearer {token}"}
-        req = urllib.request.Request(url, headers=headers)
-        try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read() or b"{}")
-        except urllib.error.HTTPError as e:
-            raise ProcessorError(f"Failed to look up existing package: {e.code} {e.read().decode()}")
-        for pkg in data.get("software_packages", []):
-            # The Fleet API is expected to return the package name in the "name" field.
-            # If the API schema changes, update this logic accordingly.
-            name = pkg.get("name", "")
-            if name.lower() != software_title.lower():
-                continue
-            versions = pkg.get("versions") or [pkg]
-            for ver in versions:
-                if ver.get("version") == version:
-                    if pkg.get("title_id") is not None:
-                        title_id = pkg.get("title_id")
-                    elif pkg.get("software_title_id") is not None:
-                        title_id = pkg.get("software_title_id")
-                    elif pkg.get("id") is not None:
-                        title_id = pkg.get("id")
-                    else:
-                        raise ProcessorError(
-                            "Could not determine title_id: none of 'title_id', 'software_title_id', or 'id' present in package data"
-                        )
-                    installer_id = ver.get("installer_id") or ver.get("id")
-                    hash_sha256 = ver.get("hash_sha256")
-                    if not hash_sha256:
-                        sha256 = hashlib.sha256()
-                        with open(pkg_path, "rb") as f:
-                            for chunk in iter(lambda: f.read(1024 * 1024), b""):
-                                sha256.update(chunk)
-                        hash_sha256 = sha256.hexdigest()
-                    return {
-                        "title_id": title_id,
-                        "installer_id": installer_id,
-                        "hash_sha256": hash_sha256,
-                    }
-        raise ProcessorError(
-            "Fleet reported package already exists but could not retrieve details"
-        )
 
     def _read_yaml(self, path: Path) -> dict:
         if not path.exists():
