@@ -29,4 +29,4 @@ Process:
       software_slug: google-chrome
       software_title: "%NAME%"
       version: "%version%"
-    Processor: local.processors/FleetGitOpsUploader
+    Processor: FleetGitOpsUploader
