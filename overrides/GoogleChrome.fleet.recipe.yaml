@@ -20,7 +20,7 @@ ParentRecipeTrustInfo:
 Process:
   - Arguments:
       automatic_install: false
-      defaults_path: fleet.defaults.yml  # path to Fleet GitOps defaults
+      defaults_path: fleet.defaults.yaml
       fleet_api_token: "%FLEET_API_TOKEN%"
       github_token: "%GITHUB_TOKEN%"
       pkg_path: "%pathname%"
