@@ -528,11 +528,16 @@ class FleetGitOpsUploader(Processor):
             versions = pkg.get("versions") or [pkg]
             for ver in versions:
                 if ver.get("version") == version:
-                    title_id = (
-                        pkg.get("title_id")
-                        or pkg.get("software_title_id")
-                        or pkg.get("id")
-                    )
+                    if pkg.get("title_id") is not None:
+                        title_id = pkg.get("title_id")
+                    elif pkg.get("software_title_id") is not None:
+                        title_id = pkg.get("software_title_id")
+                    elif pkg.get("id") is not None:
+                        title_id = pkg.get("id")
+                    else:
+                        raise ProcessorError(
+                            "Could not determine title_id: none of 'title_id', 'software_title_id', or 'id' present in package data"
+                        )
                     installer_id = ver.get("installer_id") or ver.get("id")
                     hash_sha256 = ver.get("hash_sha256")
                     if not hash_sha256:
