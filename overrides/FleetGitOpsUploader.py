@@ -157,8 +157,11 @@ class FleetGitOpsUploader(Processor):
 
         # GitHub PR
         "github_repo": {
-            "required": True,
-            "description": "GitHub repo in 'owner/repo' form for PR creation.",
+            "required": False,
+            "description": (
+                "GitHub repo in 'owner/repo' form for PR creation. "
+                "If omitted, derived from git_repo_url."
+            ),
         },
         "github_token": {
             "required": False,
@@ -256,7 +259,9 @@ class FleetGitOpsUploader(Processor):
         software_dir = self.env.get("software_dir", "lib/macos/software")
         package_yaml_suffix = self.env.get("package_yaml_suffix", ".package.yml")
         team_yaml_prefix = self.env.get("team_yaml_package_path_prefix", "../lib/macos/software/")
-        github_repo = self.env["github_repo"]
+        github_repo = self.env.get("github_repo") or self._derive_github_repo(git_repo_url)
+        if not github_repo:
+            raise ProcessorError("github_repo not provided and could not derive from git_repo_url")
         github_token = self.env.get("github_token") or os.environ.get("GITHUB_TOKEN", "")
         if not github_token:
             raise ProcessorError("GitHub token not provided (github_token or GITHUB_TOKEN env).")
