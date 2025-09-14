@@ -75,7 +75,7 @@ All inputs can be provided as AutoPkg variables in your recipe or via `-k` overr
 | `package_yaml_suffix` | No | str | Suffix for per title YAML. Default `.package.yml`. |
 | `team_yaml_package_path_prefix` | No | str | Path prefix used inside team YAML. Default `../lib/macos/software/`. |
 | `github_repo` | Yes | str | `owner/repo` for PR creation. |
-| `github_token` | No | str | GitHub token. If empty, uses `GITHUB_TOKEN` env. |
+| `github_token` | No | str | GitHub token. If empty, uses `FLEET_GITOPS_GITHUB_TOKEN` env. When set, the processor rewrites the repo URL with the token so `git clone` and `git push` authenticate without prompts. |
 | `pr_labels` | No | list[str] | Labels to set on the PR. |
 | `software_slug` | No | str | Override slug used for file and branch names. Defaults to normalized `software_title`. |
 | `branch_prefix` | No | str | Optional prefix for branch names, for example `autopkg`. |
@@ -176,7 +176,7 @@ Add the processor after your build step. Example excerpt:
         <key>team_yaml_package_path_prefix</key><string>../lib/macos/software/</string>
 
         <key>github_repo</key><string>kitzy/fleet-gitops</string>
-        <key>github_token</key><string>%GITHUB_TOKEN%</string>
+        <key>github_token</key><string>%FLEET_GITOPS_GITHUB_TOKEN%</string>
 
         <key>branch_prefix</key><string>autopkg</string>
       </dict>
@@ -225,18 +225,18 @@ jobs:
           autopkg repo-add https://github.com/autopkg/recipes.git || true
           autopkg repo-add https://github.com/yourorg/autopkg-processors.git || true
 
-      - name: Run recipe
-        env:
-          FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          autopkg run MyApp.autopkg.recipe \
-            -k FLEET_API_TOKEN="$FLEET_API_TOKEN" \
-            -k GITHUB_TOKEN="$GITHUB_TOKEN"
+        - name: Run recipe
+          env:
+            FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
+            FLEET_GITOPS_GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+          run: |
+            autopkg run MyApp.autopkg.recipe \
+              -k FLEET_API_TOKEN="$FLEET_API_TOKEN" \
+              -k FLEET_GITOPS_GITHUB_TOKEN="$FLEET_GITOPS_GITHUB_TOKEN"
 ```
 
 Notes:
-- `GITHUB_TOKEN` is available by default inside Actions with repo scope. Use a PAT if you open PRs across repos or orgs with stricter rules.
+- GitHub provides a `GITHUB_TOKEN` in Actions with repo scope. Use a PAT such as `${{ secrets.PAT_GITHUB }}` in `FLEET_GITOPS_GITHUB_TOKEN` if you open PRs across repos or orgs with stricter rules.
 - Make sure the runner has access to push branches to the GitOps repo if it is a different repository than the Actions runner.
 
 ---
@@ -284,7 +284,7 @@ Notes:
 You can run the processor outside Actions to validate behavior.
 
 1. Create a temporary directory and clone your GitOps repo.
-2. Export `GITHUB_TOKEN` and `FLEET_API_TOKEN`.
+2. Export `FLEET_GITOPS_GITHUB_TOKEN` and `FLEET_API_TOKEN`.
 3. Run your recipe with `autopkg run` and override variables with `-k` as needed.
 4. Inspect the created branch and YAML changes before opening a PR.
 
@@ -293,6 +293,7 @@ You can run the processor outside Actions to validate behavior.
 ## Security Notes
 
 - Avoid echoing tokens in logs. The example Actions job relies on environment variables and never prints secrets.
+- When a GitHub token is provided, the processor rewrites the Git repository URL with the token so that cloning and pushing use authenticated HTTPS URLs without prompts. `GIT_TERMINAL_PROMPT` is set to `0` to prevent interactive authentication.
 - Consider scoping the GitHub token to the target repo only.
 - Rotate the Fleet API token periodically.
 

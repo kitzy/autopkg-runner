@@ -166,7 +166,7 @@ class FleetGitOpsUploader(Processor):
         "github_token": {
             "required": False,
             "default": "",
-            "description": "GitHub token. If empty, will use GITHUB_TOKEN env.",
+            "description": "GitHub token. If empty, will use FLEET_GITOPS_GITHUB_TOKEN env.",
         },
         "pr_labels": {
             "required": False,
@@ -262,9 +262,11 @@ class FleetGitOpsUploader(Processor):
         github_repo = self.env.get("github_repo") or self._derive_github_repo(git_repo_url)
         if not github_repo:
             raise ProcessorError("github_repo not provided and could not derive from git_repo_url")
-        github_token = self.env.get("github_token") or os.environ.get("GITHUB_TOKEN", "")
+        github_token = self.env.get("github_token") or os.environ.get("FLEET_GITOPS_GITHUB_TOKEN", "")
         if not github_token:
-            raise ProcessorError("GitHub token not provided (github_token or GITHUB_TOKEN env).")
+            raise ProcessorError(
+                "GitHub token not provided (github_token or FLEET_GITOPS_GITHUB_TOKEN env)."
+            )
         pr_labels = list(self.env.get("pr_labels", []))
         branch_prefix = self.env.get("branch_prefix", "").strip()
 
@@ -296,7 +298,13 @@ class FleetGitOpsUploader(Processor):
         # Prepare repo in a temp dir
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_dir = Path(tmpdir) / "repo"
-            self._git(["clone", "--origin", "origin", "--branch", git_base_branch, git_repo_url, str(repo_dir)])
+            clone_url = git_repo_url
+            if github_token and git_repo_url.startswith("https://"):
+                parsed = urllib.parse.urlparse(git_repo_url)
+                if "@" not in parsed.netloc:
+                    netloc = f"{urllib.parse.quote(github_token, safe='')}@{parsed.netloc}"
+                    clone_url = urllib.parse.urlunparse(parsed._replace(netloc=netloc))
+            self._git(["clone", "--origin", "origin", "--branch", git_base_branch, clone_url, str(repo_dir)])
 
             # Create branch
             branch_name = f"{software_slug}-{returned_version}"
@@ -383,7 +391,9 @@ class FleetGitOpsUploader(Processor):
         return s or "software"
 
     def _git(self, args, cwd=None):
-        proc = subprocess.run(["git"] + args, cwd=cwd, capture_output=True, text=True)
+        env = os.environ.copy()
+        env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        proc = subprocess.run(["git"] + args, cwd=cwd, capture_output=True, text=True, env=env)
         if proc.returncode != 0:
             raise ProcessorError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
         return proc.stdout.strip()
