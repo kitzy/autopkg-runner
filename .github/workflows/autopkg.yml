@@ -5,8 +5,8 @@ on:
     types: [started]
   # Commenting out the automated schedule so this AutoPKG build doesn't run on its own.
   # Keep this part in to run on a set schedule
-  # schedule: 
-    # - cron: 00 14 * * 1-5
+  schedule: 
+     - cron: 00 14 * * 1-5
   workflow_dispatch: # manually triggered
     inputs:
       recipe:
