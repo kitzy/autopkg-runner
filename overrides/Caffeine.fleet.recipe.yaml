@@ -1,0 +1,4 @@
+Identifier: local.fleet.Caffeine
+Input:
+  NAME: Caffeine
+ParentRecipe: com.github.kitzy.fleet.Caffeine
