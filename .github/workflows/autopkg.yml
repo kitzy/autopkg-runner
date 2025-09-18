@@ -20,6 +20,9 @@ on:
         options:
         - 'False'
         - 'True'
+      pr_reviewer:
+        description: Optional GitHub username to request PR review from
+        required: false
 
 jobs:
   AutoPkg:
@@ -105,18 +108,30 @@ jobs:
 
     - name: Create Trust Info pull request
       if: env.TITLE
+      id: create_pr
       run: |
         export BRANCH_NAME=trust-info-`date +'%Y-%m-%d'`
         git checkout -b $BRANCH_NAME
         git add overrides/
-        git commit -m "${{ env.TITLE }}"
+        git commit -m "$TITLE"
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
         git push --set-upstream origin $BRANCH_NAME
-        jq -n --arg title "${{ env.TITLE }}" \
+        PR_RESPONSE=$(jq -n --arg title "$TITLE" \
               --arg body "$BODY" \
               --arg head "$BRANCH_NAME" \
            '{title: $title, body: $body, head: $head, "base": "${{ github.ref_name }}"}' | curl -s --request POST \
            --url https://api.github.com/repos/${{ github.repository }}/pulls \
            --header "authorization: Bearer $GITHUB_TOKEN" \
            --header 'content-type: application/json' \
-           -d@-
+           -d@-)
+        PR_NUMBER=$(echo "$PR_RESPONSE" | jq -r '.number')
+        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+    - name: Request PR review if reviewer set
+      if: ${{ github.event.inputs.pr_reviewer != '' && steps.create_pr.outputs.pr_number != '' }}
+      run: |
+        curl -s -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/pulls/${{ steps.create_pr.outputs.pr_number }}/requested_reviewers \
+          -d '{"reviewers":["${{ github.event.inputs.pr_reviewer }}"]}'
