@@ -6,9 +6,9 @@ ParentRecipe: com.github.kitzy.fleet.GoogleChrome
 ParentRecipeTrustInfo:
   non_core_processors:
     FleetGitOpsUploader:
-      git_hash: cabc0d3843f7cd9bb23dab53d2e738c04a3cf9e7
+      git_hash: 0032880d9585cba64d4f51689120ef2500ccf722
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader.py
-      sha256_hash: 5e55c5a9185e4d6ee978c52b480820596c6cc791ebdd966a098d14bfc1ef0cbb
+      sha256_hash: 42140b7352491e26012018111a2dccf369b5d3619e4fb013c3d81689602f3033
   parent_recipes:
     com.github.autopkg.download.googlechrome:
       git_hash: 6f8bd33df3f7ab53eb679749eae8f04227790652
