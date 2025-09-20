@@ -1,0 +1,22 @@
+Identifier: local.fleet.Caffeine
+Input:
+  NAME: Caffeine
+ParentRecipe: com.github.kitzy.fleet.Caffeine
+ParentRecipeTrustInfo:
+  non_core_processors:
+    FleetGitOpsUploader:
+      path: ""
+      sha256_hash: PROCESSOR FILEPATH NOT FOUND
+  parent_recipes:
+    com.github.homebysix.pkg.Caffeine:
+      git_hash: 13fe4fea20b645bfd9264124c0b96bdc1b9f6687
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Caffeine/Caffeine.pkg.recipe
+      sha256_hash: ac31ef8b28f1f586aec3b788ae4c74278d174c692e1e1063c9f5ebea9cc9fa48
+    com.github.kitzy.fleet.Caffeine:
+      git_hash: 933ab12388d1ec3d88d7b06b8a7a836861d9f294
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Caffeine/Caffeine.fleet.recipe.yaml
+      sha256_hash: ecb5381d8038084100f4b5a746392c4ceafc20745ea184559f694d2d61386b0c
+    com.github.peetinc.download.Caffeine:
+      git_hash: 422113e2c5b9eab704721efed3aee4a9b6882069
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.peetinc-recipes/Caffeine/Caffeine.download.recipe
+      sha256_hash: 11685cd8cbf44b39731a8fdae48c266dd84d5b3fb8c00de43f5ed8d0007eadc7

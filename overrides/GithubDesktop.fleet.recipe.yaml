@@ -1,0 +1,24 @@
+Identifier: local.fleet.GithubDesktop
+Input:
+  BUILD: darwin
+  BUNDLE_ID: com.github.GitHub
+  NAME: GitHub Desktop
+ParentRecipe: com.github.kitzy.fleet.GithubDesktop
+ParentRecipeTrustInfo:
+  non_core_processors:
+    FleetGitOpsUploader:
+      path: ""
+      sha256_hash: PROCESSOR FILEPATH NOT FOUND
+  parent_recipes:
+    com.github.homebysix.download.GitHubDesktop:
+      git_hash: 929f09a8dc248349e9ce35f7d519c253298317d1
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/GitHub/GitHubDesktop.download.recipe
+      sha256_hash: ddd466175cff624508787263a470f89b7c2dcc517e1d5cc381f59ec06c846012
+    com.github.homebysix.pkg.GitHubDesktop:
+      git_hash: dab19d8c72d5b4d2bab35a25dfd43d2e4ab15173
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/GitHub/GitHubDesktop.pkg.recipe
+      sha256_hash: 8bfa208120d6372efa61b1043046f6a08ef896e0d4c07a0853cd3f532026c798
+    com.github.kitzy.fleet.GithubDesktop:
+      git_hash: 933ab12388d1ec3d88d7b06b8a7a836861d9f294
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GitHub/GithubDesktop.fleet.recipe.yaml
+      sha256_hash: e433db608824efd8ac6a03544b2cb07a0558fe0383adfe128716bd30effef98c
