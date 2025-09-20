@@ -93,6 +93,15 @@ jobs:
         defaults write com.github.autopkg GITHUB_TOKEN "${{ secrets.GITHUB_TOKEN }}"
         defaults write com.github.autopkg FLEET_GITOPS_GITHUB_TOKEN "${{ secrets.FLEET_GITOPS_GITHUB_TOKEN }}"
         defaults write com.github.autopkg FLEET_API_TOKEN "${{ secrets.FLEET_API_TOKEN }}"
+        
+        # Configure Fleet environment variables for AutoPkg
+        defaults write com.github.autopkg FLEET_API_BASE "$FLEET_API_BASE"
+        defaults write com.github.autopkg FLEET_TEAM_ID "$FLEET_TEAM_ID"
+        defaults write com.github.autopkg FLEET_GITOPS_REPO_URL "$FLEET_GITOPS_REPO_URL"
+        defaults write com.github.autopkg FLEET_GITOPS_AUTHOR_EMAIL "$FLEET_GITOPS_AUTHOR_EMAIL"
+        defaults write com.github.autopkg FLEET_TEAM_YAML_PATH "$FLEET_TEAM_YAML_PATH"
+        defaults write com.github.autopkg PR_REVIEWER "$PR_REVIEWER"
+        
         git config --global user.name "runner"
         git config --global user.email "runner@githubactions.local"
 
