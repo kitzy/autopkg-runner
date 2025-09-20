@@ -122,6 +122,8 @@ jobs:
         echo "FLEET_GITOPS_GITHUB_TOKEN set: $([[ -n $FLEET_GITOPS_GITHUB_TOKEN ]] && echo 'YES' || echo 'NO')"
 
     - name: Run AutoPkg
+      continue-on-error: true
+      id: autopkg_run
       run: |
         # Run the recipes with verbose output
         autopkg run overrides/*.recipe.yaml --verbose
