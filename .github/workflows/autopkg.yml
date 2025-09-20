@@ -34,6 +34,12 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.AUTOPKG_RUNNER_GITHUB_TOKEN }}
       FLEET_GITOPS_GITHUB_TOKEN: ${{ secrets.FLEET_GITOPS_GITHUB_TOKEN }}
       PR_REVIEWER: ${{ secrets.AUTOPKG_PR_REVIEWER }}
+      FLEET_API_BASE: ${{ secrets.FLEET_API_BASE }}
+      FLEET_API_TOKEN: ${{ secrets.FLEET_API_TOKEN }}
+      FLEET_TEAM_ID: ${{ secrets.FLEET_TEAM_ID }}
+      FLEET_GITOPS_REPO_URL: ${{ secrets.FLEET_GITOPS_REPO_URL }}
+      FLEET_GITOPS_AUTHOR_EMAIL: ${{ secrets.FLEET_GITOPS_AUTHOR_EMAIL }}
+      FLEET_TEAM_YAML_PATH: ${{ secrets.FLEET_TEAM_YAML_PATH }}
     steps:
     - name: Checkout AutoPkg recipes
       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 #v3.5.3 Pin SHA1 hash instead of version
