@@ -1,4 +1,5 @@
 https://github.com/autopkg/recipes
+https://github.com/autoplg/kitzy-recipes
 https://github.com/hjuutilainen/autopkg-virustotalanalyzer
 https://github.com/autopkg/grahampugh-recipes
 https://github.com/autopkg/homebysix-recipes
