@@ -5,18 +5,19 @@ Input:
 ParentRecipe: com.github.kitzy.fleet.GPGSuite
 ParentRecipeTrustInfo:
   non_core_processors:
-    FleetGitOpsUploader:
-      path: ''
-      sha256_hash: PROCESSOR FILEPATH NOT FOUND
+    com.github.kitzy.FleetGitOpsUploader/FleetGitOpsUploader:
+      git_hash: be76042d6797c8eec9ffb7e7c486711ad6628900
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader/FleetGitOpsUploader.py
+      sha256_hash: 5b0b0c72afe4bcf2cdf0e9c8bbc39cf37af848b2edc501bc34af112810e76745
   parent_recipes:
     com.github.gerardkok.download.GPGSuite:
       git_hash: 0f868e1baf5baa2dcd06fcef8a9c2a6fd9bf5119
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.gerardkok-recipes/GPGTools/GPGSuite.download.recipe
       sha256_hash: 627c799094cc97489b3f1fc15bd6f21810efad349f077a8b9e6419b0ce1b0513
     com.github.kitzy.fleet.GPGSuite:
-      git_hash: 933ab12388d1ec3d88d7b06b8a7a836861d9f294
+      git_hash: 6a57f150145b09d95e1bc184797b3bb0c9ac6f1d
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GPGSuite/GPGSuite.fleet.recipe.yaml
-      sha256_hash: d79fb176ed01f88acdd9fcb1e374b18e12b2eaa1257e34a19e4c5c64c8cae6be
+      sha256_hash: e102e62328d14d555a17dd393bdc51bb0fccb1af2a22db3d10c4ccf92999bb04
     com.github.kitzy.pkg.GPGSuite:
       git_hash: b16607390b8411ba8589b752962a2d4d716aeab2
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.kitzy-recipes/GPG Suite/GPGSuite.pkg.recipe
