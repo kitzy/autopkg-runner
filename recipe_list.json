@@ -1,4 +1,5 @@
 [
     "GithubDesktop.fleet.recipe.yaml",
-    "GoogleChrome.fleet.recipe.yaml"
+    "GoogleChrome.fleet.recipe.yaml",
+    "Caffeine.fleet.recipe"
 ]
