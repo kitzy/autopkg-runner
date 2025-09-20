@@ -100,8 +100,24 @@ jobs:
       run: |
         for repo in $(cat repo_list.txt); do autopkg repo-add "$repo"; done
 
+    - name: Debug Environment Variables
+      run: |
+        echo "FLEET_API_BASE: $FLEET_API_BASE"
+        echo "FLEET_TEAM_ID: $FLEET_TEAM_ID"
+        echo "FLEET_GITOPS_REPO_URL: $FLEET_GITOPS_REPO_URL"
+        echo "FLEET_GITOPS_AUTHOR_EMAIL: $FLEET_GITOPS_AUTHOR_EMAIL"
+        echo "FLEET_TEAM_YAML_PATH: $FLEET_TEAM_YAML_PATH"
+        echo "PR_REVIEWER: $PR_REVIEWER"
+        # Don't echo sensitive tokens, just check if they're set
+        echo "FLEET_API_TOKEN set: $([[ -n $FLEET_API_TOKEN ]] && echo 'YES' || echo 'NO')"
+        echo "FLEET_GITOPS_GITHUB_TOKEN set: $([[ -n $FLEET_GITOPS_GITHUB_TOKEN ]] && echo 'YES' || echo 'NO')"
+
     - name: Run AutoPkg
       run: |
+        # Run the recipes with verbose output
+        autopkg run overrides/*.recipe.yaml --verbose
+        
+        # Keep the original autopkg_tools.py logic for PR creation
         python3 autopkg_tools.py -l recipe_list.json
         if [ -f pull_request_title ]; then
         echo "TITLE=$(cat pull_request_title)" >> $GITHUB_ENV
