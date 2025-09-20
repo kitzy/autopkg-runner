@@ -125,10 +125,7 @@ jobs:
       continue-on-error: true
       id: autopkg_run
       run: |
-        # Run the recipes with verbose output
-        autopkg run overrides/*.recipe.yaml --verbose
-        
-        # Keep the original autopkg_tools.py logic for PR creation
+        # Let autopkg_tools.py handle everything including trust verification
         python3 autopkg_tools.py -l recipe_list.json
         if [ -f pull_request_title ]; then
         echo "TITLE=$(cat pull_request_title)" >> $GITHUB_ENV
