@@ -1,0 +1,23 @@
+Identifier: local.fleet.GPGSuite
+Input:
+  NAME: GPG Suite
+  SPARKLE_FEED_URL: https://gpgtools.org/releases/gpgsuite/appcast.xml
+ParentRecipe: com.github.kitzy.fleet.GPGSuite
+ParentRecipeTrustInfo:
+  non_core_processors:
+    FleetGitOpsUploader:
+      path: ''
+      sha256_hash: PROCESSOR FILEPATH NOT FOUND
+  parent_recipes:
+    com.github.gerardkok.download.GPGSuite:
+      git_hash: 0f868e1baf5baa2dcd06fcef8a9c2a6fd9bf5119
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.gerardkok-recipes/GPGTools/GPGSuite.download.recipe
+      sha256_hash: 627c799094cc97489b3f1fc15bd6f21810efad349f077a8b9e6419b0ce1b0513
+    com.github.kitzy.fleet.GPGSuite:
+      git_hash: 933ab12388d1ec3d88d7b06b8a7a836861d9f294
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GPGSuite/GPGSuite.fleet.recipe.yaml
+      sha256_hash: d79fb176ed01f88acdd9fcb1e374b18e12b2eaa1257e34a19e4c5c64c8cae6be
+    com.github.kitzy.pkg.GPGSuite:
+      git_hash: b16607390b8411ba8589b752962a2d4d716aeab2
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.kitzy-recipes/GPG Suite/GPGSuite.pkg.recipe
+      sha256_hash: 91fb797c56c9343e14b8c24d299fff9707eae5da9951df3dfdef64efb935d8af
