@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Identifier</key>
+	<string>local.fleet.Caffeine</string>
+	<key>Input</key>
+	<dict>
+		<key>NAME</key>
+		<string>Caffeine</string>
+	</dict>
+	<key>ParentRecipe</key>
+	<string>com.github.kitzy.fleet.Caffeine</string>
+	<key>ParentRecipeTrustInfo</key>
+	<dict>
+		<key>non_core_processors</key>
+		<dict>
+			<key>FleetGitOpsUploader</key>
+			<dict>
+				<key>path</key>
+				<string></string>
+				<key>sha256_hash</key>
+				<string>PROCESSOR FILEPATH NOT FOUND</string>
+			</dict>
+		</dict>
+		<key>parent_recipes</key>
+		<dict>
+			<key>com.github.homebysix.pkg.Caffeine</key>
+			<dict>
+				<key>git_hash</key>
+				<string>13fe4fea20b645bfd9264124c0b96bdc1b9f6687</string>
+				<key>path</key>
+				<string>~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Caffeine/Caffeine.pkg.recipe</string>
+				<key>sha256_hash</key>
+				<string>ac31ef8b28f1f586aec3b788ae4c74278d174c692e1e1063c9f5ebea9cc9fa48</string>
+			</dict>
+			<key>com.github.kitzy.fleet.Caffeine</key>
+			<dict>
+				<key>git_hash</key>
+				<string>933ab12388d1ec3d88d7b06b8a7a836861d9f294</string>
+				<key>path</key>
+				<string>~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Caffeine/Caffeine.fleet.recipe.yaml</string>
+				<key>sha256_hash</key>
+				<string>ecb5381d8038084100f4b5a746392c4ceafc20745ea184559f694d2d61386b0c</string>
+			</dict>
+			<key>com.github.peetinc.download.Caffeine</key>
+			<dict>
+				<key>git_hash</key>
+				<string>422113e2c5b9eab704721efed3aee4a9b6882069</string>
+				<key>path</key>
+				<string>~/Library/AutoPkg/RecipeRepos/com.github.autopkg.peetinc-recipes/Caffeine/Caffeine.download.recipe</string>
+				<key>sha256_hash</key>
+				<string>11685cd8cbf44b39731a8fdae48c266dd84d5b3fb8c00de43f5ed8d0007eadc7</string>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>
