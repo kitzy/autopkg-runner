@@ -14,9 +14,9 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Caffeine/Caffeine.pkg.recipe
       sha256_hash: ac31ef8b28f1f586aec3b788ae4c74278d174c692e1e1063c9f5ebea9cc9fa48
     com.github.kitzy.fleet.Caffeine:
-      git_hash: be76042d6797c8eec9ffb7e7c486711ad6628900
+      git_hash: 6a57f150145b09d95e1bc184797b3bb0c9ac6f1d
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Caffeine/Caffeine.fleet.recipe.yaml
-      sha256_hash: cbae642a0c32fbe4eb58b6c3c59f5a7b6d2307cd548355c98eced7ac208c9aa6
+      sha256_hash: 5469842faceecd4feb58a083e7b002e0ea28a77b8694f82865787d74d34f57f5
     com.github.peetinc.download.Caffeine:
       git_hash: 422113e2c5b9eab704721efed3aee4a9b6882069
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.peetinc-recipes/Caffeine/Caffeine.download.recipe
