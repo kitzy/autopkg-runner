@@ -1,0 +1,27 @@
+Identifier: local.fleet.Zoom
+Input:
+  BUNDLE_ID: us.zoom.xos
+  DOWNLOAD_URL: https://zoom.us/client/latest/ZoomInstallerIT.pkg
+  NAME: Zoom
+  USER_AGENT: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/536.28.10
+    (KHTML, like Gecko) Version/6.0.3 Safari/536.28.10
+ParentRecipe: com.github.kitzy.fleet.Zoom
+ParentRecipeTrustInfo:
+  non_core_processors:
+    com.github.kitzy.FleetGitOpsUploader/FleetGitOpsUploader:
+      git_hash: 85715beeb5a27c913642885fa90c8d1040bedede
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader/FleetGitOpsUploader.py
+      sha256_hash: 53406485879c5d3e99f3e5f6df800f777db51b67c0d7a829a747d2ec269f8b81
+  parent_recipes:
+    com.github.hansen-m.download.zoomus:
+      git_hash: 19f9cd527d309f57360b9e3f42da508878e27ae5
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.hansen-m-recipes/Zoom/Zoom.download.recipe
+      sha256_hash: 3c4a2f325de4d51163c93505dd134918c9b2cae5089f555d59fac62f14bce007
+    com.github.homebysix.pkg.Zoom:
+      git_hash: 3fc6a51644cfa9b791d2ff3ab6434390b073131c
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Zoom/Zoom.pkg.recipe
+      sha256_hash: 016702213ba03e795107961d41e13173c2d5a95476c74ba9f2b596c1c441c9ff
+    com.github.kitzy.fleet.Zoom:
+      git_hash: e1ef8ab51c2cb1f06d90bd2df91a2708b562e6f5
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Zoom/Zoom.fleet.recipe.yaml
+      sha256_hash: b3ffe9350f44445a1842e77832829356621b0a69cc4d8229b7cc24c7c0d4244a
