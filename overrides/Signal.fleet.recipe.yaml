@@ -1,0 +1,23 @@
+Identifier: local.fleet.Signal
+Input:
+  NAME: Signal
+ParentRecipe: com.github.kitzy.fleet.Signal
+ParentRecipeTrustInfo:
+  non_core_processors:
+    com.github.kitzy.FleetGitOpsUploader/FleetGitOpsUploader:
+      git_hash: 999f908a8833bf719d78f8fc24802c3341334ee3
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader/FleetGitOpsUploader.py
+      sha256_hash: 279300478800c33a7ba5fcd762c9b4a6fe8ba1df9d5bd5519114fec194442097
+  parent_recipes:
+    com.github.jaharmi.download.Signal:
+      git_hash: 5e999b844a573b676832feb5f4c68516cd88e6e0
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.jaharmi-recipes/Signal/Signal.download.recipe
+      sha256_hash: 089df972696bb5138da1531b09584ce84ec4e1bdd6c958a3886aa30b5eb30e0e
+    com.github.jaharmi.pkg.Signal:
+      git_hash: 5e999b844a573b676832feb5f4c68516cd88e6e0
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.jaharmi-recipes/Signal/Signal.pkg.recipe
+      sha256_hash: 3035aba69c89a833ba9efb44dadba68fc04cc55fefca7850d3ac70087157a941
+    com.github.kitzy.fleet.Signal:
+      git_hash: 9a234b45238c5d66b04ba750ed466da66bc3ee32
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Signal/Signal.fleet.recipe.yaml
+      sha256_hash: 0f296536ccb47ba792cdfa1f79b4c383885b0305dd2dba4395539e26b796ba72
