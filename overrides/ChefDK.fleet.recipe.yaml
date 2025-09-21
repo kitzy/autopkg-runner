@@ -1,0 +1,26 @@
+Identifier: local.fleet.ChefDK
+Input:
+  CHEF_VERSION: latest
+  NAME: ChefDK
+  OS: '10.12'
+  URL: https://omnitruck.chef.io/stable/chefdk/download?p=mac_os_x&pv=%OS%&m=x86_64&v=%CHEF_VERSION%
+ParentRecipe: com.github.kitzy.fleet.ChefDK
+ParentRecipeTrustInfo:
+  non_core_processors:
+    com.github.kitzy.FleetGitOpsUploader/FleetGitOpsUploader:
+      git_hash: 999f908a8833bf719d78f8fc24802c3341334ee3
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader/FleetGitOpsUploader.py
+      sha256_hash: 279300478800c33a7ba5fcd762c9b4a6fe8ba1df9d5bd5519114fec194442097
+  parent_recipes:
+    com.github.kitzy.fleet.ChefDK:
+      git_hash: 6a57f150145b09d95e1bc184797b3bb0c9ac6f1d
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Chef/ChefDK.fleet.recipe.yaml
+      sha256_hash: 3085b462ae2e9b1d1fcb6463d6a3abfce63d4d21e67b78937b8c9ac4e5549c7b
+    com.github.kitzy.pkg.ChefDK:
+      git_hash: 108f1e8b8d3b3bd7572d4f43b593c4f6dcfbe486
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.kitzy-recipes/ChefDK/ChefDK.pkg.recipe
+      sha256_hash: d1867d61d5d766c1acc8db3df71a99203b034f0103505daf93f8e42db15c7510
+    com.github.nmcspadden.download.chefdk:
+      git_hash: 705ca0b56dc22b137ba63d4256d393b508cf1480
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.nmcspadden-recipes/ChefDK/ChefDK.download.recipe
+      sha256_hash: d4521bad588aaa8d7302e0a5a1cd1348ffc752101df9956b608b6ab8c5d3822b
