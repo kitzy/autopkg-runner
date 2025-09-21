@@ -10,3 +10,4 @@ https://github.com/autopkg/swy-recipes
 https://github.com/autopkg/hjuutilainen-recipes
 https://github.com/autopkg/moofit-recipes
 https://github.com/autopkg/hansen-m-recipes
+https://github.com/autopkg/nmcspadden-recipes
