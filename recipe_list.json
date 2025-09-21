@@ -1,6 +1,8 @@
 [
+    "Caffeine.fleet.recipe.yaml",
+    "GPGSuite.fleet.recipe.yaml",
     "GithubDesktop.fleet.recipe.yaml",
     "GoogleChrome.fleet.recipe.yaml",
-    "Caffeine.fleet.recipe.yaml",
-    "GPGSuite.fleet.recipe.yaml"
+    "Signal.fleet.recipe.yaml",
+    "Zoom.fleet.recipe.yaml"
 ]
