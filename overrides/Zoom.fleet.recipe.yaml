@@ -22,6 +22,6 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Zoom/Zoom.pkg.recipe
       sha256_hash: 016702213ba03e795107961d41e13173c2d5a95476c74ba9f2b596c1c441c9ff
     com.github.kitzy.fleet.Zoom:
-      git_hash: e1ef8ab51c2cb1f06d90bd2df91a2708b562e6f5
+      git_hash: 85ad760c96bdeb0d911e8b859fb2eef782fca74e
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Zoom/Zoom.fleet.recipe.yaml
-      sha256_hash: b3ffe9350f44445a1842e77832829356621b0a69cc4d8229b7cc24c7c0d4244a
+      sha256_hash: 62c291dce715f2d0a7f9ab85f8b08189f98815bdb5c98d6959108adb6691981e
