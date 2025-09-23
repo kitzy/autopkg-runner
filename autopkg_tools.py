@@ -32,7 +32,8 @@ SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK_URL")
 if not SLACK_WEBHOOK or SLACK_WEBHOOK.lower() == "none":
     SLACK_WEBHOOK = None
 JAMF_REPO = os.path.join(os.getenv("GITHUB_WORKSPACE", "/tmp/"), "jamf-repo")
-OVERRIDES_DIR = os.path.relpath("overrides/")
+# Use an absolute overrides path so running from /tmp still finds recipe files
+OVERRIDES_DIR = os.path.join(os.getenv("GITHUB_WORKSPACE", os.getcwd()), "overrides")
 RECIPE_TO_RUN = os.environ.get("RECIPE", None)
 
 class Recipe(object):
@@ -110,17 +111,21 @@ class Recipe(object):
             raise e
 
     def _parse_report(self, report):
-        with open(report, "rb") as f:
-            report_data = plistlib.load(f)
+        report_data = {}
+        try:
+            with open(report, "rb") as f:
+                report_data = plistlib.load(f)
+        except Exception:
+            # Missing or malformed report; treat as empty results
+            report_data = {}
 
-        failed_items = report_data.get("failures", [])
+        failed_items = report_data.get("failures", []) or []
         imported_items = []
-        if report_data["summary_results"]:
-            # This means something happened
-            jamf_results = report_data["summary_results"].get(
-                "jamf_uploader_summary_result", {}
-            )
-            imported_items.extend(jamf_results.get("data_rows", []))
+        summary = report_data.get("summary_results") or {}
+        if isinstance(summary, dict):
+            jamf_results = summary.get("jamf_uploader_summary_result", {}) or {}
+            if isinstance(jamf_results, dict):
+                imported_items.extend(jamf_results.get("data_rows", []) or [])
 
         return {"imported": imported_items, "failed": failed_items}
 
@@ -156,7 +161,10 @@ class Recipe(object):
                 self.error = True
 
             self._has_run = True
-            self.results = self._parse_report(report)
+            try:
+                self.results = self._parse_report(report)
+            except Exception:
+                self.results = {"imported": [], "failed": []}
             if not self.results["failed"] and not self.error and self.updated_version:
                 self.updated = True
 
