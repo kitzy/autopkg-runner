@@ -88,7 +88,6 @@ jobs:
     - name: Configure AutoPkg and Git
       run: |
         defaults write com.github.autopkg RECIPE_OVERRIDE_DIRS "$(pwd)"/overrides/
-        defaults write com.github.autopkg AUTOPKG_PROCESSOR_SEARCH_DIRS "$(pwd)"/fleet-gitops-uploader/
         defaults write com.github.autopkg FAIL_RECIPES_WITHOUT_TRUST_INFO -bool YES
         defaults write com.github.autopkg GITHUB_TOKEN "${{ secrets.GITHUB_TOKEN }}"
         defaults write com.github.autopkg FLEET_GITOPS_GITHUB_TOKEN "${{ secrets.FLEET_GITOPS_GITHUB_TOKEN }}"
@@ -138,7 +137,7 @@ jobs:
         SLACK_WEBHOOK_URL: None
 
     - name: Create Trust Info pull request
-      if: ${{ env.TITLE }}
+      if: ${{ hashFiles('pull_request_title') != '' }}
       id: create_pr
       run: |
         export BRANCH_NAME=trust-info-`date +'%Y-%m-%d'`

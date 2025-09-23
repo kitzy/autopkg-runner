@@ -19,11 +19,11 @@ autopkglib.Processor = Processor
 autopkglib.ProcessorError = ProcessorError
 sys.modules.setdefault("autopkglib", autopkglib)
 
-from overrides.FleetGitOpsUploader import FleetGitOpsUploader
+from overrides.FleetImporter import FleetImporter
 
 
 def test_pr_body_basic():
-    body = FleetGitOpsUploader._pr_body("Firefox", "1.2.3", "firefox", 42, 99)
+    body = FleetImporter._pr_body("Firefox", "1.2.3", "firefox", 42, 99)
     assert "### Firefox 1.2.3" in body
     assert "Fleet title ID: `42`" in body
     assert "Fleet installer ID: `99`" in body
@@ -31,6 +31,6 @@ def test_pr_body_basic():
 
 
 def test_pr_body_changelog():
-    body = FleetGitOpsUploader._pr_body("Firefox", "1.2.3", "Mozilla/firefox", 42, 99)
+    body = FleetImporter._pr_body("Firefox", "1.2.3", "Mozilla/firefox", 42, 99)
     assert "[Changelog](https://github.com/Mozilla/firefox/releases/tag/1.2.3)" in body
 
