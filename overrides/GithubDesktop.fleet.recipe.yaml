@@ -7,9 +7,9 @@ ParentRecipe: com.github.kitzy.fleet.GithubDesktop
 ParentRecipeTrustInfo:
   non_core_processors:
     com.github.kitzy.FleetImporter/FleetImporter:
-      git_hash: 6d050b31a1207a7543f9777dd7c1d84c746a011f
+      git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetImporter/FleetImporter.py
-      sha256_hash: 99d8ee605b4f94ec583054d443c715ad46fc04f998497118e6001cdf391c987f
+      sha256_hash: 65060f0e00729f659d89fd86fefa6c1fd62202d606d404ef2eccab0fbc2ac595
   parent_recipes:
     com.github.homebysix.download.GitHubDesktop:
       git_hash: 929f09a8dc248349e9ce35f7d519c253298317d1
@@ -20,6 +20,6 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/GitHub/GitHubDesktop.pkg.recipe
       sha256_hash: 8bfa208120d6372efa61b1043046f6a08ef896e0d4c07a0853cd3f532026c798
     com.github.kitzy.fleet.GithubDesktop:
-      git_hash: 6a57f150145b09d95e1bc184797b3bb0c9ac6f1d
+      git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GitHub/GithubDesktop.fleet.recipe.yaml
-      sha256_hash: 9ae9b3eb9315437b9d9dc28d13865b7e74ffcb439d5ff69de66e94c5f473f2a7
+      sha256_hash: 71bd1f99cc0c480e85be1102b6b963b0ab6ca69adcc908bff591dfa57bb36406
