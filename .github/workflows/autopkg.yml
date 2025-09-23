@@ -124,13 +124,17 @@ jobs:
       continue-on-error: true
       id: autopkg_run
       run: |
-        # Let autopkg_tools.py handle everything including trust verification
-        python3 autopkg_tools.py -l recipe_list.json
+        # Run from /tmp so the workspace isn't on sys.path for the AutoPkg subprocess
+        cd /tmp
+        python3 "$GITHUB_WORKSPACE/autopkg_tools.py" -l "$GITHUB_WORKSPACE/recipe_list.json"
+        # Export PR artifacts and also copy them into the workspace for downstream steps
         if [ -f pull_request_title ]; then
-        echo "TITLE=$(cat pull_request_title)" >> $GITHUB_ENV
-        echo "BODY<<EOF" >> $GITHUB_ENV
-        cat pull_request_body >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+          cp pull_request_title "$GITHUB_WORKSPACE/"
+          cp pull_request_body "$GITHUB_WORKSPACE/"
+          echo "TITLE=$(cat pull_request_title)" >> $GITHUB_ENV
+          echo "BODY<<EOF" >> $GITHUB_ENV
+          cat pull_request_body >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         fi
       env:
         RECIPE: ${{ github.event.inputs.recipe }}
