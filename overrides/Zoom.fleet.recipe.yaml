@@ -8,9 +8,9 @@ Input:
 ParentRecipe: com.github.kitzy.fleet.Zoom
 ParentRecipeTrustInfo:
   non_core_processors:
-    com.github.kitzy.FleetGitOpsUploader/FleetGitOpsUploader:
+    com.github.kitzy.FleetImporter/FleetImporter:
       git_hash: 6d050b31a1207a7543f9777dd7c1d84c746a011f
-      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetGitOpsUploader/FleetGitOpsUploader.py
+      path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetImporter/FleetImporter.py
       sha256_hash: 99d8ee605b4f94ec583054d443c715ad46fc04f998497118e6001cdf391c987f
   parent_recipes:
     com.github.hansen-m.download.zoomus:
