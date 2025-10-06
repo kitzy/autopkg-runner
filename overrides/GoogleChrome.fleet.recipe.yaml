@@ -15,9 +15,9 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.recipes/GoogleChrome/GoogleChrome.download.recipe
       sha256_hash: c1ff98fc5b70f0794bfa43ddb9e9a46c5c045786037790ae422f47e936de3126
     com.github.autopkg.pkg.googlechrome:
-      git_hash: f29f399c54adee7122e9fdc3c1ea7ed4c67388a4
+      git_hash: dac213359eb245c48828a78d945ba8e1737f6a72
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.recipes/GoogleChrome/GoogleChrome.pkg.recipe
-      sha256_hash: 5acdf716353ccc57f021008bc5b4b55a5cb4e578e0f96864b71d4d2d29742ec8
+      sha256_hash: 14cc800d4d3179b9a67f8c492dc40acebe4e135ebd556b1ef9580214a43e915c
     com.github.kitzy.fleet.GoogleChrome:
       git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Google/GoogleChrome.fleet.recipe.yaml
