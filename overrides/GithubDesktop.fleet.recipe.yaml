@@ -16,9 +16,9 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/GitHub/GitHubDesktop.download.recipe
       sha256_hash: ddd466175cff624508787263a470f89b7c2dcc517e1d5cc381f59ec06c846012
     com.github.homebysix.pkg.GitHubDesktop:
-      git_hash: dab19d8c72d5b4d2bab35a25dfd43d2e4ab15173
+      git_hash: 0d565f5f4889452bbf8b2af22761f4116741d4e2
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/GitHub/GitHubDesktop.pkg.recipe
-      sha256_hash: 8bfa208120d6372efa61b1043046f6a08ef896e0d4c07a0853cd3f532026c798
+      sha256_hash: 063d53ac38fbca09b04ee56258b6135578b858213bbb28b298298c1de345136b
     com.github.kitzy.fleet.GithubDesktop:
       git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/GitHub/GithubDesktop.fleet.recipe.yaml
