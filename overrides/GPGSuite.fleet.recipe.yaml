@@ -6,9 +6,9 @@ ParentRecipe: com.github.kitzy.fleet.GPGSuite
 ParentRecipeTrustInfo:
   non_core_processors:
     com.github.kitzy.FleetImporter/FleetImporter:
-      git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
+      git_hash: 2ccc1523ad18e6699342ae72a221486ffc2ab7fa
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetImporter/FleetImporter.py
-      sha256_hash: 65060f0e00729f659d89fd86fefa6c1fd62202d606d404ef2eccab0fbc2ac595
+      sha256_hash: e2cad4f291aff6783367ad661fa37286fc9b9928d0fc939e5791dfb623110494
   parent_recipes:
     com.github.gerardkok.download.GPGSuite:
       git_hash: 0f868e1baf5baa2dcd06fcef8a9c2a6fd9bf5119
