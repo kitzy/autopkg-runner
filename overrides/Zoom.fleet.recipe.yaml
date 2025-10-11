@@ -9,9 +9,9 @@ ParentRecipe: com.github.kitzy.fleet.Zoom
 ParentRecipeTrustInfo:
   non_core_processors:
     com.github.kitzy.FleetImporter/FleetImporter:
-      git_hash: ff8923374d48df797d03d7ce7101f04aa9276143
+      git_hash: f2da228b8917097d82e17aa4d52e36c4d51f5035
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetImporter/FleetImporter.py
-      sha256_hash: f840dfc79b029b879639478565ddf53b40db147b5fdd56cd2afb048cbac1e2ac
+      sha256_hash: f6bc88d927384421cddc3830f9d3ee05212a8ae2a0d318154788b9231a9bf7db
   parent_recipes:
     com.github.hansen-m.download.zoomus:
       git_hash: 19f9cd527d309f57360b9e3f42da508878e27ae5
