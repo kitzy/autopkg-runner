@@ -7,9 +7,9 @@ ParentRecipe: com.github.kitzy.fleet.GithubDesktop
 ParentRecipeTrustInfo:
   non_core_processors:
     com.github.kitzy.FleetImporter/FleetImporter:
-      git_hash: f2da228b8917097d82e17aa4d52e36c4d51f5035
+      git_hash: d465960d144a9cec9ddc1b4aecda60dd57317b7f
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/FleetImporter/FleetImporter.py
-      sha256_hash: f6bc88d927384421cddc3830f9d3ee05212a8ae2a0d318154788b9231a9bf7db
+      sha256_hash: a4ef62248670068f8faeb2a22e4ac731eced73699689eda220f05fe752571520
   parent_recipes:
     com.github.homebysix.download.GitHubDesktop:
       git_hash: 929f09a8dc248349e9ce35f7d519c253298317d1
