@@ -149,7 +149,7 @@ jobs:
       if: ${{ hashFiles('pull_request_title') != '' }}
       id: create_pr
       run: |
-        export BRANCH_NAME=trust-info-`date +'%Y-%m-%d'`
+        export BRANCH_NAME=trust-info-`date +'%Y-%m-%d-%H%M%S'`
         git checkout -b $BRANCH_NAME
         git add overrides/
         git commit -m "$TITLE"
