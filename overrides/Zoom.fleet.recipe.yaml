@@ -18,9 +18,9 @@ ParentRecipeTrustInfo:
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.hansen-m-recipes/Zoom/Zoom.download.recipe
       sha256_hash: 3c4a2f325de4d51163c93505dd134918c9b2cae5089f555d59fac62f14bce007
     com.github.homebysix.pkg.Zoom:
-      git_hash: 0d565f5f4889452bbf8b2af22761f4116741d4e2
+      git_hash: 0a2e99b56786218f81650f2b385aa1653a1ac3c8
       path: ~/Library/AutoPkg/RecipeRepos/com.github.autopkg.homebysix-recipes/Zoom/Zoom.pkg.recipe
-      sha256_hash: e58254542c046d96f7d309ecd7760710057c5debd171b394fce75ee0466187b5
+      sha256_hash: 700e94086008cf5ce6136e262ffb4c44e729602ef5e2cf6d54dff5f5b394a432
     com.github.kitzy.fleet.Zoom:
       git_hash: 898cd44c4df8e8dfe19b2e583ee37b7a0f0a2863
       path: ~/Library/AutoPkg/RecipeRepos/com.github.kitzy.fleet-autopkg-recipes/Zoom/Zoom.fleet.recipe.yaml
