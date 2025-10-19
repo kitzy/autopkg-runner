@@ -154,7 +154,7 @@ jobs:
         git add overrides/
         git commit -m "$TITLE"
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-        git push --set-upstream origin $BRANCH_NAME
+        git push --force --set-upstream origin $BRANCH_NAME
         PR_RESPONSE=$(jq -n --arg title "$TITLE" \
               --arg body "$BODY" \
               --arg head "$BRANCH_NAME" \
