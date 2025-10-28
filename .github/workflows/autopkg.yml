@@ -63,6 +63,11 @@ jobs:
         echo "${{ env.AUTOPKG_SHA256 }} */tmp/autopkg.pkg" | shasum -c
         if [[ $? != "0" ]]; then exit 1; fi
         sudo installer -pkg /tmp/autopkg.pkg -target /
+        
+    - name: Install boto3 for AutoPkg's Python
+      run: |
+        # Install boto3 into the system Python that AutoPkg uses
+        sudo /usr/bin/python3 -m pip install --break-system-packages boto3
 
     - name: Install certifi and set CA bundle
       run: |
