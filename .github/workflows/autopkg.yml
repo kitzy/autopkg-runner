@@ -66,13 +66,20 @@ jobs:
         
     - name: Install boto3 for AutoPkg's Python
       run: |
-        # Install boto3 into the system Python that AutoPkg uses
-        # First upgrade pip to get support for newer options
-        sudo /usr/bin/python3 -m pip install --upgrade pip
-        # Now install boto3 (upgraded pip supports --break-system-packages)
-        sudo /usr/bin/python3 -m pip install --break-system-packages boto3 || \
-        # Fallback for older pip versions
-        sudo /usr/bin/python3 -m pip install boto3
+        # AutoPkg bundles its own Python framework
+        # Find AutoPkg's Python and install boto3 there
+        AUTOPKG_PYTHON="/Library/AutoPkg/Python3/Python.framework/Versions/Current/bin/python3"
+        
+        if [ -f "$AUTOPKG_PYTHON" ]; then
+          echo "Installing boto3 using AutoPkg's bundled Python: $AUTOPKG_PYTHON"
+          sudo "$AUTOPKG_PYTHON" -m pip install --upgrade pip
+          sudo "$AUTOPKG_PYTHON" -m pip install boto3
+        else
+          echo "AutoPkg Python not found at $AUTOPKG_PYTHON, trying system Python"
+          sudo /usr/bin/python3 -m pip install --upgrade pip
+          sudo /usr/bin/python3 -m pip install boto3 2>/dev/null || \
+            sudo /usr/bin/python3 -m pip install --break-system-packages boto3
+        fi
 
     - name: Install certifi and set CA bundle
       run: |
